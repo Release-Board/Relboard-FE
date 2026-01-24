@@ -42,27 +42,45 @@ const tags: Array<{ label: string; value: TagType | "ALL" }> = [
 ];
 
 type Props = {
-  value: TagType | "ALL";
-  onChange: (value: TagType | "ALL") => void;
+  value: TagType[];
+  onChange: (value: TagType[]) => void;
 };
 
 export default function TagFilter({ value, onChange }: Props) {
+  const isAll = value.length === 0;
+
+  const handleToggle = (tagValue: TagType | "ALL") => {
+    if (tagValue === "ALL") {
+      onChange([]);
+      return;
+    }
+
+    if (value.includes(tagValue)) {
+      onChange(value.filter((t) => t !== tagValue));
+    } else {
+      onChange([...value, tagValue]);
+    }
+  };
+
   return (
     <FilterWrap>
       {tags.map((tag) => {
         const style = getTagStyle(tag.value);
+        const isActive = tag.value === "ALL" ? isAll : value.includes(tag.value as TagType);
+
         return (
-        <FilterButton
-          key={tag.value}
-          type="button"
-          $active={value === tag.value}
-          $tone={style.color}
-          $bg={style.background}
-          onClick={() => onChange(tag.value)}
-        >
-          {tag.label}
-        </FilterButton>
-      );})}
+          <FilterButton
+            key={tag.value}
+            type="button"
+            $active={isActive}
+            $tone={style.color}
+            $bg={style.background}
+            onClick={() => handleToggle(tag.value)}
+          >
+            {tag.label}
+          </FilterButton>
+        );
+      })}
     </FilterWrap>
   );
 }

@@ -28,14 +28,13 @@ const Sentinel = styled.div`
 `;
 
 export default function ReleaseTimeline() {
-  const [activeTag, setActiveTag] = useState<TagType | "ALL">("ALL");
-  const tagType = activeTag === "ALL" ? undefined : activeTag;
+  const [tags, setTags] = useState<TagType[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const releasesQuery = useInfiniteQuery({
-    queryKey: ["releases", tagType],
+    queryKey: ["releases", tags],
     queryFn: ({ pageParam = 0 }) =>
-      fetchReleases({ page: pageParam, size: 20, tagType }),
+      fetchReleases({ page: pageParam, size: 20, tags }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.number + 1;
@@ -67,7 +66,7 @@ export default function ReleaseTimeline() {
 
   return (
     <TimelineWrap>
-      <TagFilter value={activeTag} onChange={setActiveTag} />
+      <TagFilter value={tags} onChange={setTags} />
 
       {isLoading &&
         Array.from({ length: 4 }).map((_, index) => (

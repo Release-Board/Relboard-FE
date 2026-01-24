@@ -10,21 +10,25 @@ import type {
 export type ReleaseListParams = {
   page?: number;
   size?: number;
-  tagType?: TagType;
+  tags?: TagType[];
 };
 
-function buildQuery(params: Record<string, string | number | undefined>) {
+function buildQuery(params: Record<string, string | number | undefined | Array<string>>) {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined || value === null) return;
-    searchParams.set(key, String(value));
+    if (Array.isArray(value)) {
+      value.forEach((v) => searchParams.append(key, v));
+    } else {
+      searchParams.set(key, String(value));
+    }
   });
   const query = searchParams.toString();
   return query ? `?${query}` : "";
 }
 
 export async function fetchReleases(params: ReleaseListParams) {
-  const query = buildQuery(params);
+  const query = buildQuery(params as unknown as Record<string, string | number | undefined | Array<string>>);
   const response = await fetchJson<CommonApiResponse<Page<ReleaseResponse>>>(
     `/api/v1/releases${query}`
   );
@@ -40,7 +44,7 @@ export async function fetchTechStackReleases(
   techStackName: string,
   params: ReleaseListParams
 ) {
-  const query = buildQuery(params);
+  const query = buildQuery(params as unknown as Record<string, string | number | undefined | Array<string>>);
   const response = await fetchJson<CommonApiResponse<Page<ReleaseResponse>>>(
     `/api/v1/tech-stacks/${techStackName}/releases${query}`
   );

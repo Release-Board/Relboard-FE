@@ -49,17 +49,16 @@ type Props = {
 };
 
 export default function TechStackTimeline({ techStackName }: Props) {
-  const [activeTag, setActiveTag] = useState<TagType | "ALL">("ALL");
-  const tagType = activeTag === "ALL" ? undefined : activeTag;
+  const [tags, setTags] = useState<TagType[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const releasesQuery = useInfiniteQuery({
-    queryKey: ["tech-stack-releases", techStackName, tagType],
+    queryKey: ["tech-stack-releases", techStackName, tags],
     queryFn: ({ pageParam = 0 }) =>
       fetchTechStackReleases(techStackName, {
         page: pageParam,
         size: 20,
-        tagType,
+        tags,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
@@ -97,7 +96,7 @@ export default function TechStackTimeline({ techStackName }: Props) {
         <Sub>해당 스택의 최신 릴리즈 히스토리를 확인하세요.</Sub>
       </Heading>
 
-      <TagFilter value={activeTag} onChange={setActiveTag} />
+      <TagFilter value={tags} onChange={setTags} />
 
       {isLoading &&
         Array.from({ length: 4 }).map((_, index) => (
