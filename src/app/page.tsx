@@ -47,18 +47,7 @@ const Sub = styled.p`
 `;
 
 const HeroMeta = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-`;
-
-const MetaChip = styled.span`
-  padding: 8px 14px;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.muted};
+  display: none;
 `;
 
 export default function Home() {
@@ -68,16 +57,8 @@ export default function Home() {
         <Hero>
           <Eyebrow>RelBoard</Eyebrow>
           <Headline>릴리즈를 한눈에, 리스크는 먼저</Headline>
-          <Sub>
-            Breaking/Security 업데이트를 놓치지 않는 릴리즈 보드. 최신 릴리즈를
-            타임라인으로 훑고, 필요한 순간에만 깊게 파고드세요.
-          </Sub>
-          <HeroMeta>
-            <MetaChip>ISR 기반 캐시</MetaChip>
-            <MetaChip>무한 스크롤</MetaChip>
-            <MetaChip>태그 필터</MetaChip>
-            <MetaChip>Markdown 렌더링</MetaChip>
-          </HeroMeta>
+          <Sub />
+          <HeroMeta />
         </Hero>
 
         <ReleaseTimeline />

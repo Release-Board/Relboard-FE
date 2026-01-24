@@ -40,6 +40,7 @@ export type TechStackResponse = {
   name: string;
   latestVersion: string;
   category: string;
+  colorHex?: string | null;
 };
 
 export type AuthTokenResponse = {

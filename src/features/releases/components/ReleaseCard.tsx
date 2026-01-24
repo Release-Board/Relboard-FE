@@ -25,15 +25,23 @@ const Header = styled.div`
   justify-content: space-between;
 `;
 
-const StackBadge = styled.span`
+const StackBadge = styled.span<{ $color?: string }>`
   padding: 6px 12px;
   border-radius: ${({ theme }) => theme.radii.pill};
-  background: rgba(47, 107, 255, 0.12);
-  color: ${({ theme }) => theme.colors.accentStrong};
+  background: ${({ $color, theme }) =>
+    $color
+      ? `color-mix(in srgb, ${$color} 15%, ${theme.colors.surface})`
+      : "rgba(47, 107, 255, 0.12)"};
+  color: ${({ $color, theme }) => $color ?? theme.colors.accentStrong};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid
+    ${({ $color, theme }) =>
+      $color
+        ? `color-mix(in srgb, ${$color} 45%, ${theme.colors.surface})`
+        : theme.colors.border};
 `;
 
 const VersionTitle = styled.h3`
@@ -118,7 +126,9 @@ export default function ReleaseCard({ release }: Props) {
   return (
     <Card>
       <Header>
-        <StackBadge>{release.techStack.name}</StackBadge>
+        <StackBadge $color={release.techStack.colorHex ?? undefined}>
+          {release.techStack.name}
+        </StackBadge>
       </Header>
       <VersionTitle>v{release.version}</VersionTitle>
       <Meta>
