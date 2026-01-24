@@ -11,6 +11,8 @@ export type ReleaseListParams = {
   page?: number;
   size?: number;
   tags?: TagType[];
+  categories?: string[];
+  keyword?: string;
 };
 
 function buildQuery(params: Record<string, string | number | undefined | Array<string>>) {
@@ -63,6 +65,18 @@ export async function fetchTechStacks() {
 
   if (!response.success) {
     throw new Error(response.error?.message ?? "Failed to fetch tech stacks");
+  }
+
+  return response.data;
+}
+
+export async function fetchCategories() {
+  const response = await fetchJson<CommonApiResponse<string[]>>(
+    "/api/v1/tech-stacks/categories"
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to fetch categories");
   }
 
   return response.data;

@@ -24,6 +24,8 @@ export type Page<T> = {
 
 export type TagType = "BREAKING" | "SECURITY" | "FEATURE" | "FIX";
 
+export type Category = string;
+
 export type ReleaseResponse = {
   id: number;
   techStack: TechStackResponse;
