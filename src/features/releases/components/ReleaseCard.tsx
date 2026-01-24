@@ -39,9 +39,9 @@ const StackBadge = styled.span<{ $color?: string }>`
   text-transform: uppercase;
   border: 1px solid
     ${({ $color, theme }) =>
-      $color
-        ? `color-mix(in srgb, ${$color} 45%, ${theme.colors.surface})`
-        : theme.colors.border};
+    $color
+      ? `color-mix(in srgb, ${$color} 45%, ${theme.colors.surface})`
+      : theme.colors.border};
 `;
 
 const VersionTitle = styled.h3`
@@ -98,6 +98,7 @@ const Tag = styled.span<{ $variant: TagType }>`
   font-weight: 600;
   background: ${({ $variant }) => getTagStyleByTagType($variant).background};
   color: ${({ $variant }) => getTagStyleByTagType($variant).color};
+  box-shadow: ${({ $variant }) => getTagStyleByTagType($variant).boxShadow};
 `;
 
 const Link = styled.a`
