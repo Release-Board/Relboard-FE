@@ -2,6 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkGemoji from "remark-gemoji";
 import rehypeSanitize from "rehype-sanitize";
 import styled from "styled-components";
 
@@ -74,7 +75,7 @@ type Props = {
 export default function Markdown({ content }: Props) {
   return (
     <MarkdownWrap>
-      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
+      <ReactMarkdown remarkPlugins={[remarkGfm, remarkGemoji]} rehypePlugins={[rehypeSanitize]}>
         {content}
       </ReactMarkdown>
     </MarkdownWrap>
