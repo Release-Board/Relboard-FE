@@ -5,6 +5,7 @@ import styled from "styled-components";
 
 import Markdown from "@/components/Markdown";
 import type { ReleaseResponse, TagType } from "@/lib/api/types";
+import { getTagStyleByTagType } from "@/styles/semantic-tags";
 
 const Card = styled.article`
   border-radius: ${({ theme }) => theme.radii.lg};
@@ -87,34 +88,8 @@ const Tag = styled.span<{ $variant: TagType }>`
   border-radius: ${({ theme }) => theme.radii.pill};
   font-size: ${({ theme }) => theme.fontSizes.xs};
   font-weight: 600;
-  background: ${({ $variant, theme }) => {
-    switch ($variant) {
-      case "BREAKING":
-        return `${theme.semantic.breaking}1F`;
-      case "SECURITY":
-        return `${theme.semantic.security}1F`;
-      case "FEATURE":
-        return `${theme.semantic.feature}1F`;
-      case "FIX":
-        return `${theme.semantic.fix}1F`;
-      default:
-        return theme.colors.surfaceRaised;
-    }
-  }};
-  color: ${({ $variant, theme }) => {
-    switch ($variant) {
-      case "BREAKING":
-        return theme.semantic.breaking;
-      case "SECURITY":
-        return theme.semantic.security;
-      case "FEATURE":
-        return theme.semantic.feature;
-      case "FIX":
-        return theme.semantic.fix;
-      default:
-        return theme.colors.text;
-    }
-  }};
+  background: ${({ $variant }) => getTagStyleByTagType($variant).background};
+  color: ${({ $variant }) => getTagStyleByTagType($variant).color};
 `;
 
 const Link = styled.a`
