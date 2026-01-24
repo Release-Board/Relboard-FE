@@ -17,7 +17,7 @@ const FilterButton = styled.button<{ $active: boolean; $tone: string; $bg: strin
   padding: 8px 14px;
   border-radius: ${({ theme }) => theme.radii.pill};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ $active }) => ($active ? 700 : 600)};
+  font-weight: 600;
   cursor: pointer;
   transition: all 160ms ease;
 
@@ -25,6 +25,12 @@ const FilterButton = styled.button<{ $active: boolean; $tone: string; $bg: strin
     border-color: ${({ $tone }) => $tone};
     color: ${({ $tone }) => $tone};
   }
+
+  ${({ $active }) =>
+    $active &&
+    `
+      box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
+    `}
 `;
 
 const tags: Array<{ label: string; value: TagType | "ALL" }> = [
