@@ -60,11 +60,7 @@ export type LoginResponse = {
   expiresIn: number;
 };
 
-/* Internal Next.js API Response for Login */
-export type ProxyLoginResponse = {
-  accessToken: string;
-  user: User;
-};
+
 
 export type AuthTokenResponse = {
   accessToken: string;

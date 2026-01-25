@@ -1,10 +1,8 @@
-"use client";
-
 import { useEffect, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import styled from "styled-components";
 import { useAuthStore } from "@/lib/store/authStore";
-import { loginWithKakaoCode, fetchUser } from "@/lib/api/client";
+import { fetchUser } from "@/lib/api/client";
 
 const Container = styled.div`
   display: flex;
@@ -16,57 +14,43 @@ const Container = styled.div`
 
 function CallbackContent() {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const code = searchParams.get("code");
     const processed = useRef(false);
     const { login } = useAuthStore();
 
     useEffect(() => {
-        if (!code || processed.current) return;
+        if (processed.current) return;
         processed.current = true;
 
         async function processLogin() {
             try {
-                // 1. Exchange Code for Token (via BFF)
-                const { accessToken } = await loginWithKakaoCode(code!);
+                // 1. Read Access Token from Cookie
+                const getCookie = (name: string) => {
+                    const value = `; ${document.cookie}`;
+                    const parts = value.split(`; ${name}=`);
+                    if (parts.length === 2) return parts.pop()?.split(";").shift();
+                };
+                const accessToken = getCookie("accessToken");
 
-                // 2. Set AccessToken to Store (but we need user info too)
-                // Store needs user object. 
-                // We set token first to allow fetchUser to use it.
-                // Wait, store.login takes (user, token).
-                // So we can't set token alone easily unless we add setToken to store.
-                // But let's hack it: temporarily set token or assume fetchUser works if we pass token?
-                // fetchJson injects token from store.
-                // So we must put it in store.
+                if (!accessToken) {
+                    throw new Error("No token provided in cookie");
+                }
 
-                // Let's modify store or use a temporary way.
-                // Actually, we can just call fetchUser with the token manually?
-                // But fetchUser uses fetchJson which uses store.
-                // So we should update store.
+                // 2. Clear Cookie (Security)
+                document.cookie = "accessToken=; path=/; max-age=0";
 
-                // Let's assume we update fetchUser to accept token optionally?
-                // Or just update store with dummy user first.
-
-                // Better: Update store to allow partial login?
-                // Or just `useAuthStore.setState({ accessToken })` directly (Zustand allows direct access if outside hook, but here we are in hook)
+                // 3. Fetch User & Login
                 useAuthStore.setState({ accessToken });
-
-                // 3. Fetch User Info
                 const user = await fetchUser();
 
-                // 4. Final Login
                 login(user, accessToken);
-
                 router.replace("/");
             } catch (error) {
-                console.error("Login failed", error);
-                alert("로그인에 실패했습니다.");
+                console.error("Login processing failed", error);
                 router.replace("/login");
             }
         }
-
         processLogin();
-    }, [code, router, login]);
+    }, [router, login]);
 
     return <Container>로그인 중입니다...</Container>;
 }

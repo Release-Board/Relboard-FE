@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/lib/store/authStore";
-import type { CommonApiResponse, ProxyLoginResponse, User } from "./types";
+import type { CommonApiResponse, User } from "./types";
 
 const DEFAULT_BASE_URL = "http://localhost:8080";
 
