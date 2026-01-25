@@ -49,6 +49,7 @@ export async function fetchJson<T>(
     const response = await fetch(`${baseUrl}${path}`, {
       ...init,
       headers,
+      credentials: "include", // Important for Cookies (RefreshToken)
     });
 
     // 2. Handle 401 (Refresh Logic)
@@ -65,24 +66,29 @@ export async function fetchJson<T>(
       isRefreshing = true;
 
       try {
-        // Call BFF Refresh
-        const refreshRes = await fetch("/api/auth/refresh", {
+        // Direct Backend Refresh (Cookies sent automatically)
+        const refreshRes = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
         });
 
         if (refreshRes.ok) {
-          const data: ProxyLoginResponse = await refreshRes.json();
-          authStore.login(authStore.user!, data.accessToken); // Update store
-          processQueue(null, data.accessToken);
-
-          // Retry original request
-          return fetchJson<T>(path, options);
-        } else {
-          // Refresh failed
-          authStore.logout();
-          processQueue(new Error("Session expired"));
-          throw new Error("Session expired");
+          const body: CommonApiResponse<{ accessToken: string }> = await refreshRes.json();
+          // Verify success
+          if (body.success && body.data) {
+            const newAccessToken = body.data.accessToken;
+            authStore.login(authStore.user!, newAccessToken);
+            processQueue(null, newAccessToken);
+            return fetchJson<T>(path, options);
+          }
         }
+
+        // Refresh failed (Status not ok or Body success false)
+        authStore.logout();
+        processQueue(new Error("Session expired"));
+        throw new Error("Session expired");
+
       } catch (err) {
         processQueue(err as Error);
         authStore.logout();
@@ -108,51 +114,16 @@ export async function fetchJson<T>(
 }
 
 // Auth APIs
-export async function loginWithKakaoCode(code: string) {
-  const response = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Login failed");
-  }
-
-  return (await response.json()) as { accessToken: string };
-}
 
 export async function logout() {
-  await fetch("/api/auth/logout", { method: "POST" });
+  await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+    method: "POST",
+    credentials: "include"
+  });
   useAuthStore.getState().logout();
 }
 
 export async function fetchUser() {
-  // Assuming Backend has /api/v1/users/me or similar?
-  // Spec check: Spec doesn't mention User Info API :(.
-  // Requirement 2.2 says "loginWithKakao... returns UserDto?" No.
-  // Wait, if no user info API, how do we get nickname/profile?
-  // 
-  // Maybe we decode the JWT? Or Backend SHOULD provide it.
-  // Let's assume GET /api/v1/users/me exists or will exist.
-  // If not, we might be stuck. 
-
-  // Let's check requirements again. Phase 3 requirements: "[ ] libs/user 모듈을 연동하여 KakaoOAuth2Client 구현 (인가 코드 -> 토큰 -> 유저 정보)."
-  // It says "User Info". 
-  // Let's assume we can fetch it. 
-
-  // NOTE: For now I will mock/placeholder this or try to fetch it.
-  // If api/v1/users/me doesn't exist, I'll return dummy data so UI doesn't break.
-
-  /* 
-     Temporary: Just return dummy user derived from token if API fails?
-     No, let's try calling it.
-  */
-  return {
-    id: 1,
-    nickname: "User",
-    email: "user@example.com",
-    profileImage: null,
-    role: "USER"
-  } as User;
+  const response = await fetchJson<CommonApiResponse<User>>("/api/v1/auth/me");
+  return response.data;
 }
