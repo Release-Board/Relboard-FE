@@ -45,6 +45,27 @@ export type TechStackResponse = {
   colorHex?: string | null;
 };
 
+export type User = {
+  id: number;
+  email: string | null;
+  nickname: string;
+  profileImage: string | null;
+  role: "USER" | "ADMIN";
+};
+
+export type LoginResponse = {
+  accessToken: string;
+  refreshToken: string;
+  grantType: string;
+  expiresIn: number;
+};
+
+/* Internal Next.js API Response for Login */
+export type ProxyLoginResponse = {
+  accessToken: string;
+  user: User;
+};
+
 export type AuthTokenResponse = {
   accessToken: string;
   refreshToken: string;
