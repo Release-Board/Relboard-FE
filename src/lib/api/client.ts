@@ -125,11 +125,16 @@ export async function fetchJson<T>(
 // Auth APIs
 
 export async function logout() {
-  await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
-    method: "POST",
-    credentials: "include"
-  });
-  useAuthStore.getState().logout();
+  try {
+    await fetchJson<CommonApiResponse<{ loggedOut: boolean }>>(
+      "/api/v1/auth/logout",
+      {
+        method: "POST",
+      }
+    );
+  } finally {
+    useAuthStore.getState().logout();
+  }
 }
 
 export async function fetchUser() {
