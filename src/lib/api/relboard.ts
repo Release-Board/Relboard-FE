@@ -3,6 +3,7 @@ import type {
   CommonApiResponse,
   Page,
   ReleaseResponse,
+  SubscriptionResult,
   TagType,
   TechStackResponse,
 } from "./types";
@@ -77,6 +78,48 @@ export async function fetchCategories() {
 
   if (!response.success) {
     throw new Error(response.error?.message ?? "Failed to fetch categories");
+  }
+
+  return response.data;
+}
+
+export async function fetchMySubscriptions() {
+  const response = await fetchJson<CommonApiResponse<TechStackResponse[]>>(
+    "/api/v1/users/me/subscriptions"
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to fetch subscriptions");
+  }
+
+  return response.data;
+}
+
+export async function subscribeTechStack(techStackId: number) {
+  const response = await fetchJson<CommonApiResponse<SubscriptionResult>>(
+    `/api/v1/tech-stacks/${techStackId}/subscribe`,
+    {
+      method: "POST",
+    }
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to subscribe");
+  }
+
+  return response.data;
+}
+
+export async function unsubscribeTechStack(techStackId: number) {
+  const response = await fetchJson<CommonApiResponse<SubscriptionResult>>(
+    `/api/v1/tech-stacks/${techStackId}/subscribe`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to unsubscribe");
   }
 
   return response.data;

@@ -68,3 +68,9 @@ export type AuthTokenResponse = {
   grantType: string;
   expiresIn: number;
 };
+
+export type SubscriptionResult = {
+  subscribed: boolean;
+  created?: boolean;
+  deleted?: boolean;
+};

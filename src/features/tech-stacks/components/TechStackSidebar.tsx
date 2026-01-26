@@ -11,6 +11,12 @@ const Container = styled.div`
   padding: 24px 16px;
 `;
 
+const Section = styled.div`
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+`;
+
 const Title = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.muted};
@@ -54,24 +60,37 @@ export default function TechStackSidebar() {
 
   return (
     <Container>
-      <Title>Tech Stacks</Title>
-      <List>
-        <li>
-          <NavLink href="/" $active={pathname === "/"}>
-            All Releases
-          </NavLink>
-        </li>
-        {techStacks?.map((stack) => (
-          <li key={stack.id}>
-            <NavLink
-              href={`/tech-stacks/${stack.name}`}
-              $active={pathname === `/tech-stacks/${stack.name}`}
-            >
-              {stack.name}
+      <Section>
+        <Title>Overview</Title>
+        <List>
+          <li>
+            <NavLink href="/" $active={pathname === "/"}>
+              All Releases
             </NavLink>
           </li>
-        ))}
-      </List>
+          <li>
+            <NavLink href="/me/subscriptions" $active={pathname === "/me/subscriptions"}>
+              내 구독
+            </NavLink>
+          </li>
+        </List>
+      </Section>
+
+      <Section>
+        <Title>Tech Stacks</Title>
+        <List>
+          {techStacks?.map((stack) => (
+            <li key={stack.id}>
+              <NavLink
+                href={`/tech-stacks/${stack.name}`}
+                $active={pathname === `/tech-stacks/${stack.name}`}
+              >
+                {stack.name}
+              </NavLink>
+            </li>
+          ))}
+        </List>
+      </Section>
     </Container>
   );
 }

@@ -1,14 +1,15 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 
-import { fetchTechStackReleases } from "@/lib/api/relboard";
+import { fetchTechStackReleases, fetchTechStacks } from "@/lib/api/relboard";
 import type { TagType } from "@/lib/api/types";
 import ReleaseCard from "@/features/releases/components/ReleaseCard";
 import ReleaseCardSkeleton from "@/features/releases/components/ReleaseCardSkeleton";
 import TagFilter from "@/features/releases/components/TagFilter";
+import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
 
 const TimelineWrap = styled.section`
   display: grid;
@@ -18,6 +19,14 @@ const TimelineWrap = styled.section`
 const Heading = styled.div`
   display: grid;
   gap: 6px;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const Title = styled.h2`
@@ -51,6 +60,16 @@ type Props = {
 export default function TechStackTimeline({ techStackName }: Props) {
   const [tags, setTags] = useState<TagType[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const { data: techStacks } = useQuery({
+    queryKey: ["tech-stacks"],
+    queryFn: fetchTechStacks,
+  });
+
+  const currentStack = useMemo(
+    () => techStacks?.find((stack) => stack.name === techStackName),
+    [techStacks, techStackName]
+  );
 
   const releasesQuery = useInfiniteQuery({
     queryKey: ["tech-stack-releases", techStackName, tags],
@@ -92,7 +111,10 @@ export default function TechStackTimeline({ techStackName }: Props) {
   return (
     <TimelineWrap>
       <Heading>
-        <Title>{techStackName}</Title>
+        <TitleRow>
+          <Title>{techStackName}</Title>
+          {currentStack && <SubscribeButton techStack={currentStack} />}
+        </TitleRow>
         <Sub>해당 스택의 최신 릴리즈 히스토리를 확인하세요.</Sub>
       </Heading>
 

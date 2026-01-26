@@ -6,6 +6,7 @@ import styled from "styled-components";
 import Markdown from "@/components/Markdown";
 import type { ReleaseResponse, TagType } from "@/lib/api/types";
 import { getTagStyleByTagType } from "@/styles/semantic-tags";
+import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
 
 const Card = styled.article`
   border-radius: ${({ theme }) => theme.radii.lg};
@@ -130,6 +131,7 @@ export default function ReleaseCard({ release }: Props) {
         <StackBadge $color={release.techStack.colorHex ?? undefined}>
           {release.techStack.name}
         </StackBadge>
+        <SubscribeButton techStack={release.techStack} />
       </Header>
       <VersionTitle>v{release.version}</VersionTitle>
       <Meta>
