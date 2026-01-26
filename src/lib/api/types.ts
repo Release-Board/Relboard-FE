@@ -49,7 +49,7 @@ export type User = {
   id: number;
   email: string | null;
   nickname: string;
-  profileImage: string | null;
+  profileImageUrl: string | null;
   role: "USER" | "ADMIN";
 };
 

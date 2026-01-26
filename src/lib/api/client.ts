@@ -124,6 +124,6 @@ export async function logout() {
 }
 
 export async function fetchUser() {
-  const response = await fetchJson<CommonApiResponse<User>>("/api/v1/auth/me");
+  const response = await fetchJson<CommonApiResponse<User>>("/api/v1/users/me");
   return response.data;
 }

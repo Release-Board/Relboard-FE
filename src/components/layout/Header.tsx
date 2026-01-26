@@ -65,6 +65,28 @@ const Profile = styled.div`
     font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
+const Avatar = styled.img`
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const AvatarFallback = styled.div`
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.accentStrong};
+  background: rgba(47, 107, 255, 0.12);
+  border: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
 export default function Header() {
     const { user, isInitialized } = useAuthStore();
     const [mounted, setMounted] = useState(false);
@@ -91,10 +113,17 @@ export default function Header() {
                 {user ? (
                     <>
                         <Profile>
-                            {/* 
-                 TODO: If user.profileImage exists, show Avatar. 
-                 Using nickname for now. 
-                */}
+                            {user.profileImageUrl && (
+                                <Avatar
+                                    src={user.profileImageUrl}
+                                    alt={`${user.nickname} 프로필 이미지`}
+                                />
+                            )}
+                            {!user.profileImageUrl && (
+                                <AvatarFallback aria-hidden="true">
+                                    {user.nickname?.trim().slice(0, 1) || "U"}
+                                </AvatarFallback>
+                            )}
                             <span>{user.nickname}님</span>
                         </Profile>
                         <Button onClick={handleLogout}>로그아웃</Button>
