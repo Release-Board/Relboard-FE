@@ -29,6 +29,26 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
+export async function refreshAccessToken() {
+  const refreshRes = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+
+  if (!refreshRes.ok) {
+    return null;
+  }
+
+  const body: CommonApiResponse<{ accessToken: string }> =
+    await refreshRes.json();
+  if (!body.success || !body.data?.accessToken) {
+    return null;
+  }
+
+  return body.data.accessToken;
+}
+
 export async function fetchJson<T>(
   path: string,
   options: FetchOptions = {}
@@ -67,28 +87,17 @@ export async function fetchJson<T>(
 
       try {
         // Direct Backend Refresh (Cookies sent automatically)
-        const refreshRes = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-
-        if (refreshRes.ok) {
-          const body: CommonApiResponse<{ accessToken: string }> = await refreshRes.json();
-          // Verify success
-          if (body.success && body.data) {
-            const newAccessToken = body.data.accessToken;
-            authStore.login(authStore.user!, newAccessToken);
-            processQueue(null, newAccessToken);
-            return fetchJson<T>(path, options);
-          }
+        const newAccessToken = await refreshAccessToken();
+        if (newAccessToken) {
+          authStore.setAccessToken(newAccessToken);
+          processQueue(null, newAccessToken);
+          return fetchJson<T>(path, options);
         }
 
-        // Refresh failed (Status not ok or Body success false)
+        // Refresh failed
         authStore.logout();
         processQueue(new Error("Session expired"));
         throw new Error("Session expired");
-
       } catch (err) {
         processQueue(err as Error);
         authStore.logout();

@@ -104,7 +104,13 @@ export default function Header() {
         }
     };
 
-    if (!mounted) return <HeaderWrap><Logo href="/">RelBoard</Logo></HeaderWrap>;
+    if (!mounted || !isInitialized) {
+        return (
+            <HeaderWrap>
+                <Logo href="/">RelBoard</Logo>
+            </HeaderWrap>
+        );
+    }
 
     return (
         <HeaderWrap>

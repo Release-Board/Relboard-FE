@@ -3,6 +3,7 @@
 import styled from "styled-components";
 import TechStackSidebar from "@/features/tech-stacks/components/TechStackSidebar";
 import Header from "./Header";
+import { useAuthStore } from "@/lib/store/authStore";
 
 const LayoutWrap = styled.div`
   display: flex;
@@ -25,6 +26,14 @@ const Content = styled.div`
   margin: 0 auto;
 `;
 
+const InitPlaceholder = styled.div`
+  height: 40vh;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.surfaceRaised};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: ${({ theme }) => theme.shadows.soft};
+`;
+
 const SidebarWrap = styled.aside`
   width: 260px;
   border-right: 1px solid ${({ theme }) => theme.colors.border};
@@ -38,6 +47,8 @@ const SidebarWrap = styled.aside`
 `;
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const isInitialized = useAuthStore((state) => state.isInitialized);
+
   return (
     <LayoutWrap>
       <SidebarWrap>
@@ -45,7 +56,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </SidebarWrap>
       <Main>
         <Header />
-        <Content>{children}</Content>
+        <Content>{isInitialized ? children : <InitPlaceholder />}</Content>
       </Main>
     </LayoutWrap>
   );
