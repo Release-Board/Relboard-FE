@@ -32,6 +32,7 @@ export type ReleaseResponse = {
   version: string;
   title: string;
   content: string;
+  contentKo?: string | null;
   sourceUrl: string;
   publishedAt: string;
   tags: TagType[];

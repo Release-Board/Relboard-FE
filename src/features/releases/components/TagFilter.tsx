@@ -12,8 +12,9 @@ const FilterWrap = styled.div`
 
 const FilterButton = styled.button<{ $active: boolean; $tone: string; $bg: string }>`
   border: 1px solid ${({ $tone }) => $tone};
-  background: ${({ $bg }) => $bg};
-  color: ${({ $tone }) => $tone};
+  background: ${({ $active, $bg, $tone }) =>
+    $active ? $tone : $bg};
+  color: ${({ $active, $tone }) => ($active ? "#ffffff" : $tone)};
   padding: 8px 14px;
   border-radius: ${({ theme }) => theme.radii.pill};
   font-size: ${({ theme }) => theme.fontSizes.sm};
@@ -23,13 +24,14 @@ const FilterButton = styled.button<{ $active: boolean; $tone: string; $bg: strin
 
   &:hover {
     border-color: ${({ $tone }) => $tone};
-    color: ${({ $tone }) => $tone};
+    color: ${({ $active, $tone }) => ($active ? "#ffffff" : $tone)};
   }
 
   ${({ $active }) =>
     $active &&
     `
-      box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
+      box-shadow: 0 8px 20px rgba(15, 26, 58, 0.18);
+      transform: translateY(-1px);
     `}
 `;
 

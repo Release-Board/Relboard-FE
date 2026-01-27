@@ -68,10 +68,11 @@ const Tags = styled.div`
 
 const Actions = styled.div`
   display: flex;
+  align-items: center;
   justify-content: flex-end;
 `;
 
-const ToggleButton = styled.button`
+const ExpandButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.accentStrong};
@@ -88,8 +89,60 @@ const ToggleButton = styled.button`
 `;
 
 const MarkdownPanel = styled.div`
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  padding-top: 16px;
+  position: relative;
+  margin-top: 6px;
+  padding: 20px;
+  background: ${({ theme }) => theme.colors.surfaceRaised};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-top: 2px solid ${({ theme }) => theme.colors.accentStrong};
+  border-radius: ${({ theme }) => theme.radii.md};
+`;
+
+const FileTabs = styled.div`
+  position: absolute;
+  top: -24px;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const FileTabButton = styled.button<{ $active: boolean }>`
+  padding: 4px 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.surfaceRaised : theme.colors.surface};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.text : theme.colors.muted};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 160ms ease;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.accentStrong};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+
+const TranslationNotice = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: rgba(47, 107, 255, 0.12);
+  color: ${({ theme }) => theme.colors.accentStrong};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 600;
 `;
 
 const Tag = styled.span<{ $variant: TagType }>`
@@ -123,7 +176,9 @@ type Props = {
 
 export default function ReleaseCard({ release }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const hasContent = Boolean(release.content);
+  const [showKorean, setShowKorean] = useState(Boolean(release.contentKo));
+  const hasContent = Boolean(release.content || release.contentKo);
+  const canTranslate = Boolean(release.contentKo);
 
   return (
     <Card>
@@ -150,15 +205,42 @@ export default function ReleaseCard({ release }: Props) {
 
       {hasContent && (
         <Actions>
-          <ToggleButton type="button" onClick={() => setExpanded((prev) => !prev)}>
+          <ExpandButton type="button" onClick={() => setExpanded((prev) => !prev)}>
             {expanded ? "본문 닫기" : "본문 보기"}
-          </ToggleButton>
+          </ExpandButton>
         </Actions>
       )}
 
       {expanded && hasContent && (
         <MarkdownPanel>
-          <Markdown content={release.content} />
+          <FileTabs>
+            {canTranslate ? (
+              <>
+                <FileTabButton
+                  type="button"
+                  $active={showKorean}
+                  onClick={() => setShowKorean(true)}
+                >
+                  Korean
+                </FileTabButton>
+                <FileTabButton
+                  type="button"
+                  $active={!showKorean}
+                  onClick={() => setShowKorean(false)}
+                >
+                  English
+                </FileTabButton>
+              </>
+            ) : (
+              <FileTabButton type="button" $active>
+                English
+              </FileTabButton>
+            )}
+          </FileTabs>
+          {showKorean && canTranslate && (
+            <TranslationNotice>AI가 번역한 내용입니다</TranslationNotice>
+          )}
+          <Markdown content={showKorean && canTranslate ? release.contentKo ?? "" : release.content} />
         </MarkdownPanel>
       )}
     </Card>
