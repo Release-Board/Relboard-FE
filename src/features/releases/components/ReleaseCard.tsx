@@ -7,6 +7,7 @@ import Markdown from "@/components/Markdown";
 import type { ReleaseResponse, TagType } from "@/lib/api/types";
 import { getTagStyleByTagType } from "@/styles/semantic-tags";
 import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
+import BookmarkButton from "@/features/bookmarks/components/BookmarkButton";
 
 const Card = styled.article`
   border-radius: ${({ theme }) => theme.radii.lg};
@@ -70,6 +71,12 @@ const Actions = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
+`;
+
+const HeaderActions = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 `;
 
 const ExpandButton = styled.button`
@@ -186,7 +193,10 @@ export default function ReleaseCard({ release }: Props) {
         <StackBadge $color={release.techStack.colorHex ?? undefined}>
           {release.techStack.name}
         </StackBadge>
-        <SubscribeButton techStack={release.techStack} />
+        <HeaderActions>
+          <SubscribeButton techStack={release.techStack} />
+          <BookmarkButton release={release} />
+        </HeaderActions>
       </Header>
       <VersionTitle>v{release.version}</VersionTitle>
       <Meta>

@@ -73,6 +73,11 @@ export default function TechStackSidebar() {
               내 구독
             </NavLink>
           </li>
+          <li>
+            <NavLink href="/me/bookmarks" $active={pathname === "/me/bookmarks"}>
+              북마크
+            </NavLink>
+          </li>
         </List>
       </Section>
 

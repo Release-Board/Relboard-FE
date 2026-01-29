@@ -4,6 +4,7 @@ import styled from "styled-components";
 import TechStackSidebar from "@/features/tech-stacks/components/TechStackSidebar";
 import Header from "./Header";
 import { useAuthStore } from "@/lib/store/authStore";
+import ToastHost from "@/components/common/ToastHost";
 
 const LayoutWrap = styled.div`
   display: flex;
@@ -58,6 +59,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Header />
         <Content>{isInitialized ? children : <InitPlaceholder />}</Content>
       </Main>
+      <ToastHost />
     </LayoutWrap>
   );
 }

@@ -1,6 +1,7 @@
 import { fetchJson } from "./client";
 import type {
   CommonApiResponse,
+  BookmarkResult,
   Page,
   ReleaseResponse,
   SubscriptionResult,
@@ -16,6 +17,11 @@ export type ReleaseListParams = {
   keyword?: string;
 };
 
+export type BookmarkListParams = {
+  page?: number;
+  size?: number;
+};
+
 function buildQuery(params: Record<string, string | number | undefined | Array<string>>) {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
@@ -28,6 +34,17 @@ function buildQuery(params: Record<string, string | number | undefined | Array<s
   });
   const query = searchParams.toString();
   return query ? `?${query}` : "";
+}
+
+function unwrapResponse<T>(response: unknown, fallbackMessage: string): T {
+  if (response && typeof response === "object" && "success" in response) {
+    const typed = response as CommonApiResponse<T>;
+    if (!typed.success) {
+      throw new Error(typed.error?.message ?? fallbackMessage);
+    }
+    return typed.data;
+  }
+  return response as T;
 }
 
 export async function fetchReleases(params: ReleaseListParams) {
@@ -123,4 +140,58 @@ export async function unsubscribeTechStack(techStackId: number) {
   }
 
   return response.data;
+}
+
+export async function addBookmark(releaseId: number) {
+  const response = await fetchJson<CommonApiResponse<BookmarkResult> | BookmarkResult>(
+    `/api/v1/releases/${releaseId}/bookmark`,
+    {
+      method: "POST",
+    }
+  );
+  return unwrapResponse<BookmarkResult>(response, "Failed to add bookmark");
+}
+
+export async function removeBookmark(releaseId: number) {
+  const response = await fetchJson<CommonApiResponse<BookmarkResult> | BookmarkResult>(
+    `/api/v1/releases/${releaseId}/bookmark`,
+    {
+      method: "DELETE",
+    }
+  );
+  return unwrapResponse<BookmarkResult>(response, "Failed to remove bookmark");
+}
+
+export async function fetchMyBookmarks() {
+  const response = await fetchJson<CommonApiResponse<Page<ReleaseResponse>> | Page<ReleaseResponse>>(
+    "/api/v1/users/me/bookmarks"
+  );
+  return unwrapResponse<Page<ReleaseResponse>>(response, "Failed to fetch bookmarks");
+}
+
+export async function fetchMyBookmarksPage(params: BookmarkListParams) {
+  const query = buildQuery(
+    params as unknown as Record<string, string | number | undefined | Array<string>>
+  );
+  const response = await fetchJson<
+    CommonApiResponse<Page<ReleaseResponse>> | Page<ReleaseResponse> | ReleaseResponse[]
+  >(
+    `/api/v1/users/me/bookmarks${query}`
+  );
+  const data = unwrapResponse<Page<ReleaseResponse> | ReleaseResponse[]>(
+    response,
+    "Failed to fetch bookmarks"
+  );
+
+  if (Array.isArray(data)) {
+    return {
+      content: data,
+      totalElements: data.length,
+      totalPages: 1,
+      number: 0,
+      size: data.length,
+    };
+  }
+
+  return data;
 }

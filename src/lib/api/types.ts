@@ -75,3 +75,9 @@ export type SubscriptionResult = {
   created?: boolean;
   deleted?: boolean;
 };
+
+export type BookmarkResult = {
+  bookmarked: boolean;
+  created?: boolean;
+  deleted?: boolean;
+};
