@@ -1,4 +1,4 @@
-export const theme = {
+export const darkTheme = {
   colors: {
     // Background Colors
     background: "#000000",      // Pure Black (메인 배경)
@@ -63,3 +63,27 @@ export const theme = {
     fix: "#10b981",
   },
 };
+
+export const lightTheme = {
+  ...darkTheme,
+  colors: {
+    ...darkTheme.colors,
+    background: "#ffffff",
+    surface: "#f8f8f8",
+    surfaceRaised: "#f1f5f9",
+    elevated: "#ffffff",
+    text: "#0a0a0a",
+    textSecondary: "#52525b",
+    muted: "#71717a",
+    border: "#e4e4e7",
+    borderHover: "#d4d4d8",
+    tagBg: "#e4e4e7",
+    tagText: "#3f3f46",
+  },
+  shadows: {
+    soft: "0 12px 28px rgba(15, 23, 42, 0.12)",
+    medium: "0 16px 36px rgba(15, 23, 42, 0.16)",
+  },
+};
+
+export const theme = darkTheme;

@@ -6,6 +6,10 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { logout } from "@/lib/api/client";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
+import { Moon, Sun } from "lucide-react";
+import { useThemeStore } from "@/lib/store/themeStore";
+import { useLanguageStore } from "@/lib/store/languageStore";
 
 const HeaderWrap = styled.header`
   height: 64px;
@@ -106,6 +110,20 @@ const IconButton = styled.button`
   cursor: pointer;
 `;
 
+const LangButton = styled.button`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.muted};
+  cursor: pointer;
+`;
+
 const Button = styled.button`
   background: transparent;
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -159,6 +177,11 @@ export default function Header({ menuButton }: HeaderProps) {
   const [searchKeyword, setSearchKeyword] = useState("");
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useStableTranslation();
+  const themeMode = useThemeStore((state) => state.mode);
+  const toggleTheme = useThemeStore((state) => state.toggle);
+  const language = useLanguageStore((state) => state.language);
+  const toggleLanguage = useLanguageStore((state) => state.toggle);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchKeyword.trim().length >= 2) {
@@ -199,12 +222,12 @@ export default function Header({ menuButton }: HeaderProps) {
           {menuButton}
           <Logo href="/">Relboard</Logo>
           <Nav>
-            <NavLink href="/" $active={pathname === "/"}>Overview</NavLink>
+            <NavLink href="/" $active={pathname === "/"}>{t("header.overview")}</NavLink>
             <NavLink href="/me/subscriptions" $active={pathname === "/me/subscriptions"}>
-              Following
+              {t("header.following")}
             </NavLink>
             <NavLink href="/me/bookmarks" $active={pathname === "/me/bookmarks"}>
-              Bookmarks
+              {t("header.bookmarks")}
             </NavLink>
           </Nav>
         </Left>
@@ -217,13 +240,33 @@ export default function Header({ menuButton }: HeaderProps) {
               </svg>
             </SearchIcon>
             <SearchInput
-              placeholder="Search releases..."
+              placeholder={t("header.searchPlaceholder")}
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyDown={handleSearch}
             />
           </SearchWrap>
-          <IconButton type="button" aria-label="Notifications">
+          <IconButton
+            type="button"
+            aria-label={t("header.themeToggle")}
+            onClick={toggleTheme}
+            title={t("header.themeToggle")}
+          >
+            {themeMode === "dark" ? (
+              <Moon size={14} />
+            ) : (
+              <Sun size={14} />
+            )}
+          </IconButton>
+          <LangButton
+            type="button"
+            aria-label={t("header.languageToggle")}
+            onClick={toggleLanguage}
+            title={t("header.languageToggle")}
+          >
+            {language === "ko" ? "KR" : "EN"}
+          </LangButton>
+          <IconButton type="button" aria-label={t("header.notifications")}>
             <Dot />
           </IconButton>
           {user ? (
@@ -240,12 +283,17 @@ export default function Header({ menuButton }: HeaderProps) {
                     {user.nickname?.trim().slice(0, 1) || "U"}
                   </AvatarFallback>
                 )}
-                <span>{user.nickname}님</span>
+                <span>
+                  {user.nickname}
+                  {t("header.profileSuffix")}
+                </span>
               </Profile>
-              <Button onClick={handleLogout}>로그아웃</Button>
+              <Button onClick={handleLogout}>{t("header.logout")}</Button>
             </>
           ) : (
-            <Button onClick={() => (window.location.href = "/login")}>로그인</Button>
+            <Button onClick={() => (window.location.href = "/login")}>
+              {t("header.login")}
+            </Button>
           )}
         </Actions>
       </HeaderInner>
