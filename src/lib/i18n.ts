@@ -99,6 +99,7 @@ const resources = {
         deleteImageError: "이미지 삭제에 실패했어요.",
         loginPrompt: "로그인 후 프로필을 수정할 수 있어요.",
         loginLink: "로그인하기",
+        unsaved: "변경 사항 있음",
       },
       auth: {
         loggingIn: "로그인 중입니다...",
@@ -277,6 +278,7 @@ const resources = {
         deleteImageError: "Failed to delete image.",
         loginPrompt: "Log in to edit your profile.",
         loginLink: "Log in",
+        unsaved: "Unsaved changes",
       },
       auth: {
         loggingIn: "Logging in...",
