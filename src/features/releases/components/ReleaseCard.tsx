@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
 import Markdown from "@/components/Markdown";
@@ -8,6 +8,7 @@ import type { ReleaseResponse, TagType } from "@/lib/api/types";
 import { getTagStyleByTagType } from "@/styles/semantic-tags";
 import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
 import BookmarkButton from "@/features/bookmarks/components/BookmarkButton";
+import { trackReleaseView } from "@/lib/api/relboard";
 
 const Card = styled.article`
   border-radius: ${({ theme }) => theme.radii.lg};
@@ -51,6 +52,22 @@ const VersionTitle = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.muted};
   font-family: ${({ theme }) => theme.fonts.mono};
+`;
+
+const ReleaseTitle = styled.button`
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.text};
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.accent};
+  }
 `;
 
 const Meta = styled.div`
@@ -186,6 +203,19 @@ export default function ReleaseCard({ release }: Props) {
   const [showKorean, setShowKorean] = useState(Boolean(release.contentKo));
   const hasContent = Boolean(release.content || release.contentKo);
   const canTranslate = Boolean(release.contentKo);
+  const viewTrackedRef = useRef(false);
+
+  const trackViewOnce = () => {
+    if (viewTrackedRef.current) return;
+    viewTrackedRef.current = true;
+    trackReleaseView(release.id);
+  };
+
+  useEffect(() => {
+    if (expanded) {
+      trackViewOnce();
+    }
+  }, [expanded]);
 
   return (
     <Card>
@@ -198,6 +228,17 @@ export default function ReleaseCard({ release }: Props) {
           <BookmarkButton release={release} />
         </HeaderActions>
       </Header>
+      <ReleaseTitle
+        type="button"
+        onClick={() => {
+          trackViewOnce();
+          if (hasContent) {
+            setExpanded(true);
+          }
+        }}
+      >
+        {release.title || `v${release.version}`}
+      </ReleaseTitle>
       <VersionTitle>v{release.version}</VersionTitle>
       <Meta>
         <span>{formatDate(release.publishedAt)}</span>

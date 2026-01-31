@@ -19,12 +19,14 @@ const Card = styled.div<{ $size: "sm" | "md" | "lg" }>`
     ${({ $size }) => ($size === "sm" ? "360px" : $size === "lg" ? "560px" : "420px")},
     100%
   );
+  max-height: 80vh;
   background: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.radii.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
   box-shadow: ${({ theme }) => theme.shadows.soft};
   padding: 24px;
   display: grid;
+  grid-template-rows: auto 1fr auto;
   gap: 16px;
 `;
 
@@ -39,6 +41,14 @@ const BodyText = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.muted};
   line-height: 1.6;
+`;
+
+const Content = styled.div`
+  display: grid;
+  gap: 12px;
+  overflow-y: auto;
+  padding-right: 6px;
+  min-height: 0;
 `;
 
 const Actions = styled.div<{ $align: "start" | "center" | "end" }>`
@@ -93,8 +103,10 @@ export default function Modal({
     >
       <Card $size={size}>
         <Title id="modal-title">{title}</Title>
-        {description && <BodyText>{description}</BodyText>}
-        {children}
+        <Content>
+          {description && <BodyText>{description}</BodyText>}
+          {children}
+        </Content>
         {actions && <Actions $align={actionsAlign}>{actions}</Actions>}
       </Card>
     </Overlay>

@@ -1,4 +1,4 @@
-import { fetchJson } from "./client";
+import { API_BASE_URL, fetchJson } from "./client";
 import type {
   CommonApiResponse,
   BookmarkResult,
@@ -194,4 +194,31 @@ export async function fetchMyBookmarksPage(params: BookmarkListParams) {
   }
 
   return data;
+}
+
+export async function fetchTrendingReleases(params: {
+  period?: "WEEKLY" | "DAILY";
+  limit?: number;
+}) {
+  const query = buildQuery({
+    period: params.period,
+    limit: params.limit,
+  });
+  const response = await fetchJson<
+    CommonApiResponse<ReleaseResponse[]> | ReleaseResponse[]
+  >(`/api/v1/releases/trending${query}`);
+
+  return unwrapResponse<ReleaseResponse[]>(
+    response,
+    "Failed to fetch trending releases"
+  );
+}
+
+export function trackReleaseView(releaseId: number) {
+  fetch(`${API_BASE_URL}/api/v1/releases/${releaseId}/view`, {
+    method: "POST",
+    credentials: "include",
+  }).catch(() => {
+    // Fire-and-forget
+  });
 }

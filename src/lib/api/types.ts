@@ -36,6 +36,8 @@ export type ReleaseResponse = {
   sourceUrl: string;
   publishedAt: string;
   tags: TagType[];
+  viewCount?: number;
+  bookmarkCount?: number;
 };
 
 export type TechStackResponse = {

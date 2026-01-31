@@ -11,6 +11,7 @@ import ReleaseCardSkeleton from "./ReleaseCardSkeleton";
 import TagFilter from "./TagFilter";
 import CategoryFilter from "./CategoryFilter";
 import SearchBar from "./SearchBar";
+import TrendingSection from "./TrendingSection";
 
 const TimelineWrap = styled.section`
   display: grid;
@@ -87,6 +88,7 @@ export default function ReleaseTimeline() {
     <TimelineWrap>
       <Controls>
         <SearchBar keyword={keyword} onChange={setKeyword} />
+        <TrendingSection />
         <FilterRow>
           <CategoryFilter value={categories} onChange={setCategories} />
         </FilterRow>
