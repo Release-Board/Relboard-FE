@@ -40,6 +40,37 @@ export type ReleaseResponse = {
   bookmarkCount?: number;
 };
 
+export type CommentUser = {
+  id: string;
+  nickname: string;
+  profileImageUrl: string | null;
+};
+
+export type CommentResponse = {
+  id: string;
+  userId: string;
+  releaseId: string;
+  content: string;
+  parentId: string | null;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user: CommentUser;
+  children: CommentResponse[];
+};
+
+export type CommentCreateResult = {
+  commentId: string;
+};
+
+export type CommentUpdateResult = {
+  updated: boolean;
+};
+
+export type CommentDeleteResult = {
+  deleted: boolean;
+};
+
 export type TechStackResponse = {
   id: number;
   name: string;

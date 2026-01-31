@@ -2,6 +2,10 @@ import { API_BASE_URL, fetchJson } from "./client";
 import type {
   CommonApiResponse,
   BookmarkResult,
+  CommentCreateResult,
+  CommentDeleteResult,
+  CommentResponse,
+  CommentUpdateResult,
   Page,
   ReleaseResponse,
   SubscriptionResult,
@@ -221,4 +225,73 @@ export function trackReleaseView(releaseId: number) {
   }).catch(() => {
     // Fire-and-forget
   });
+}
+
+export async function fetchComments(
+  releaseId: number,
+  params: { page?: number; size?: number } = {}
+) {
+  const query = buildQuery({
+    page: params.page,
+    size: params.size,
+  });
+  const response = await fetchJson<CommonApiResponse<Page<CommentResponse>>>(
+    `/api/v1/releases/${releaseId}/comments${query}`
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to fetch comments");
+  }
+
+  return response.data;
+}
+
+export async function createComment(releaseId: number, payload: {
+  content: string;
+  parentId?: string;
+}) {
+  const response = await fetchJson<CommonApiResponse<CommentCreateResult>>(
+    `/api/v1/releases/${releaseId}/comments`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to create comment");
+  }
+
+  return response.data;
+}
+
+export async function updateComment(commentId: string, payload: { content: string }) {
+  const response = await fetchJson<CommonApiResponse<CommentUpdateResult>>(
+    `/api/v1/comments/${commentId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to update comment");
+  }
+
+  return response.data;
+}
+
+export async function deleteComment(commentId: string) {
+  const response = await fetchJson<CommonApiResponse<CommentDeleteResult>>(
+    `/api/v1/comments/${commentId}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to delete comment");
+  }
+
+  return response.data;
 }
