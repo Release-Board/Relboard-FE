@@ -296,6 +296,9 @@ export default function Header({ menuButton }: HeaderProps) {
             <NavLink href="/me/subscriptions" $active={pathname === "/me/subscriptions"}>
               {t("header.following")}
             </NavLink>
+            <NavLink href="/trending" $active={pathname === "/trending"}>
+              {t("header.trending")}
+            </NavLink>
             <NavLink href="/me/bookmarks" $active={pathname === "/me/bookmarks"}>
               {t("header.bookmarks")}
             </NavLink>
