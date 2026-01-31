@@ -75,6 +75,8 @@ export type TechStackResponse = {
   id: number;
   name: string;
   latestVersion: string;
+  latestReleaseAt?: string | null;
+  description?: string | null;
   category: string;
   colorHex?: string | null;
 };

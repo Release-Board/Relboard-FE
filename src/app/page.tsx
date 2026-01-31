@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
-import ReleaseTimeline from "@/features/releases/components/ReleaseTimeline";
+import TechStackList from "@/features/tech-stacks/components/TechStackList";
 
 const Hero = styled.section`
   display: grid;
@@ -34,7 +34,7 @@ export default function Home() {
         <Sub>{t("home.subtitle")}</Sub>
       </Hero>
 
-      <ReleaseTimeline />
+      <TechStackList />
     </>
   );
 }

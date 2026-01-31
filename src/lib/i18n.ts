@@ -48,6 +48,12 @@ const resources = {
         loadError: "데이터를 불러오지 못했습니다.",
         empty: "표시할 릴리즈가 없습니다.",
       },
+      techStackList: {
+        loading: "기술 스택을 불러오는 중...",
+        error: "기술 스택을 불러오지 못했습니다.",
+        empty: "표시할 기술 스택이 없습니다.",
+        latest: "최신 {{version}} · {{date}}",
+      },
       bookmarks: {
         title: "북마크",
         subtitle: "다시 보고 싶은 릴리즈를 모아볼 수 있어요.",
@@ -226,6 +232,12 @@ const resources = {
         subtitle: "Check the latest release history for this stack.",
         loadError: "Failed to load releases.",
         empty: "No releases to display.",
+      },
+      techStackList: {
+        loading: "Loading tech stacks...",
+        error: "Failed to load tech stacks.",
+        empty: "No tech stacks to display.",
+        latest: "Latest {{version}} · {{date}}",
       },
       bookmarks: {
         title: "Bookmarks",
