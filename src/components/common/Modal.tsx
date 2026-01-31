@@ -6,7 +6,7 @@ import styled from "styled-components";
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(15, 26, 58, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;

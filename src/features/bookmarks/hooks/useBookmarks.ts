@@ -7,7 +7,7 @@ import type { BookmarkResult, Page, ReleaseResponse } from "@/lib/api/types";
 import { useAuthStore } from "@/lib/store/authStore";
 
 type BookmarkContext = {
-  previous?: Array<[unknown[], Page<ReleaseResponse> | undefined]>;
+  previous?: ReadonlyArray<readonly [readonly unknown[], Page<ReleaseResponse> | undefined]>;
 };
 
 type UseBookmarksOptions = {

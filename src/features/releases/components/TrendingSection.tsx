@@ -37,7 +37,7 @@ const PeriodToggle = styled.div`
   padding: 4px;
   border-radius: 999px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  background: #f1f3f5;
+  background: ${({ theme }) => theme.colors.surfaceRaised};
   position: relative;
   overflow: hidden;
 `;
@@ -67,8 +67,8 @@ const ToggleIndicator = styled.span<{ $active: "WEEKLY" | "DAILY" }>`
   width: calc(50% - 6px);
   height: calc(100% - 8px);
   border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(31, 38, 135, 0.18);
+  background: ${({ theme }) => theme.colors.surface};
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
   transform: ${({ $active }) =>
     $active === "DAILY" ? "translateX(100%)" : "translateX(0)"};
   transition: transform 220ms ease;
@@ -113,14 +113,14 @@ const Grid = styled.div`
 const Card = styled.button<{ $rank: number; $area: string }>`
   text-align: left;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(18, 22, 29, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: ${({ $rank }) => ($rank === 1 ? "22px" : $rank <= 3 ? "18px" : "14px")};
   display: grid;
   gap: ${({ $rank }) => ($rank >= 4 ? "8px" : "10px")};
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
   min-height: ${({ $rank }) => ($rank === 1 ? "260px" : $rank <= 3 ? "200px" : "140px")};
   cursor: pointer;
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
@@ -153,7 +153,7 @@ const RankNumber = styled.span<{ $rank: number }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: "Outfit", ${({ theme }) => theme.fonts.sans}, sans-serif;
+  font-family: "Outfit", ${({ theme }) => theme.fonts.body}, sans-serif;
   font-weight: 800;
   font-size: ${({ $rank }) =>
     $rank === 1 ? "3.5rem" : $rank <= 3 ? "2.5rem" : "2rem"};
@@ -193,7 +193,7 @@ const Meta = styled.div`
 const Skeleton = styled.div<{ $area: string }>`
   border-radius: 22px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  background: linear-gradient(90deg, rgba(240, 244, 255, 0.7), rgba(255, 255, 255, 0.9));
+  background: linear-gradient(90deg, rgba(26, 32, 40, 0.8), rgba(17, 21, 28, 0.9));
   background-size: 200% 200%;
   animation: ${shimmer} 1.4s ease infinite;
   min-height: 200px;
@@ -378,7 +378,7 @@ export default function TrendingSection() {
             )}
           </ModalActions>
         }
-      > 
+      >
         {selectedRelease && (
           <>
             <ModalMeta>
