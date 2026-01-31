@@ -75,6 +75,7 @@ const resources = {
       },
       login: {
         title: "로그인",
+        github: "GitHub으로 시작하기",
         kakao: "카카오 로그인",
       },
       auth: {
@@ -230,6 +231,7 @@ const resources = {
       },
       login: {
         title: "Log in",
+        github: "Continue with GitHub",
         kakao: "Log in with Kakao",
       },
       auth: {
