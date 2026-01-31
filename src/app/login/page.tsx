@@ -1,6 +1,7 @@
 "use client";
 
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import { API_BASE_URL } from "@/lib/api/client";
 
 const Container = styled.div`
@@ -38,6 +39,7 @@ const KakaoButton = styled.a`
 `;
 
 export default function LoginPage() {
+    const { t } = useStableTranslation();
     const handleLogin = () => {
         // Redirect to Backend OAuth endpoint which redirects to Kakao
         window.location.href = `${API_BASE_URL}/api/v1/auth/kakao/login`;
@@ -45,9 +47,9 @@ export default function LoginPage() {
 
     return (
         <Container>
-            <Title>로그인</Title>
+            <Title>{t("login.title")}</Title>
             <KakaoButton onClick={handleLogin}>
-                카카오 로그인
+                {t("login.kakao")}
             </KakaoButton>
         </Container>
     );

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import { useComments } from "@/features/comments/hooks/useComments";
 import CommentItem from "@/features/comments/components/CommentItem";
@@ -116,6 +117,7 @@ export default function CommentsSection({ releaseId }: Props) {
   } = useComments({ releaseId });
   const [content, setContent] = useState("");
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
+  const { t } = useStableTranslation();
 
   const totalElements = page?.totalElements ?? comments.length;
 
@@ -161,8 +163,8 @@ export default function CommentsSection({ releaseId }: Props) {
   return (
     <Section>
       <Heading>
-        <Title>댓글</Title>
-        <Count>{totalElements}개</Count>
+        <Title>{t("comments.title")}</Title>
+        <Count>{t("comments.count", { count: totalElements })}</Count>
       </Heading>
 
       <InputCard>
@@ -171,7 +173,7 @@ export default function CommentsSection({ releaseId }: Props) {
           onChange={(event) => setContent(event.target.value)}
           onInput={handleAutoResize}
           placeholder={
-            user ? "댓글을 작성해보세요" : "로그인 후 소통에 참여해보세요"
+            user ? t("comments.inputPlaceholderAuth") : t("comments.inputPlaceholderGuest")
           }
           disabled={!user}
           maxLength={500}
@@ -179,15 +181,15 @@ export default function CommentsSection({ releaseId }: Props) {
         <InputRow>
           <Helper>{content.length}/500</Helper>
           <Button type="button" onClick={handleSubmit} disabled={!user || !canSubmit}>
-            등록
+            {t("common.register")}
           </Button>
         </InputRow>
       </InputCard>
 
-      {isLoading && <EmptyState>댓글을 불러오는 중...</EmptyState>}
-      {isError && <EmptyState>댓글을 불러오지 못했습니다.</EmptyState>}
+      {isLoading && <EmptyState>{t("comments.loading")}</EmptyState>}
+      {isError && <EmptyState>{t("comments.error")}</EmptyState>}
       {!isLoading && !isError && comments.length === 0 && (
-        <EmptyState>첫 댓글을 남겨보세요.</EmptyState>
+        <EmptyState>{t("comments.empty")}</EmptyState>
       )}
 
       <List>

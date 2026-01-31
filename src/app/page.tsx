@@ -1,6 +1,7 @@
 "use client";
 
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import ReleaseTimeline from "@/features/releases/components/ReleaseTimeline";
 
@@ -25,11 +26,12 @@ const Sub = styled.p`
 `;
 
 export default function Home() {
+  const { t } = useStableTranslation();
   return (
     <>
       <Hero>
-        <Headline>Release Notes</Headline>
-        <Sub>Track the latest updates from your favorite tech stacks in one place.</Sub>
+        <Headline>{t("home.title")}</Headline>
+        <Sub>{t("home.subtitle")}</Sub>
       </Hero>
 
       <ReleaseTimeline />

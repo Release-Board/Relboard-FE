@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import Markdown from "@/components/Markdown";
 import type { ReleaseResponse, TagType } from "@/lib/api/types";
@@ -209,10 +210,10 @@ const TranslationNotice = styled.div`
   font-weight: 600;
 `;
 
-function formatDate(value: string) {
+function formatDate(value: string, locale: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("ko-KR", {
+  return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -229,6 +230,7 @@ export default function ReleaseCard({ release }: Props) {
   const hasContent = Boolean(release.content || release.contentKo);
   const canTranslate = Boolean(release.contentKo);
   const viewTrackedRef = useRef(false);
+  const { t, language } = useStableTranslation();
 
   const summary = useMemo(() => {
     if (release.title) return release.title;
@@ -276,15 +278,17 @@ export default function ReleaseCard({ release }: Props) {
 
       <TitleRow>
         <Badge $tone="version">v{release.version}</Badge>
-        {release.tags.includes("BREAKING") && <Badge $tone="breaking">Breaking</Badge>}
+        {release.tags.includes("BREAKING") && (
+          <Badge $tone="breaking">{t("release.breaking")}</Badge>
+        )}
       </TitleRow>
 
       {summary && <Summary>{summary}</Summary>}
 
       <Meta>
-        <span>{formatDate(release.publishedAt)}</span>
+        <span>{formatDate(release.publishedAt, language)}</span>
         <Link href={release.sourceUrl} target="_blank" rel="noreferrer">
-          View changelog
+          {t("common.viewChangelog")}
         </Link>
       </Meta>
 
@@ -298,7 +302,7 @@ export default function ReleaseCard({ release }: Props) {
 
       {hasContent && (
         <ExpandButton type="button" onClick={() => setExpanded((prev) => !prev)}>
-          {expanded ? "Collapse" : "View details"}
+          {expanded ? t("common.collapse") : t("common.viewDetails")}
         </ExpandButton>
       )}
 
@@ -312,24 +316,24 @@ export default function ReleaseCard({ release }: Props) {
                   $active={showKorean}
                   onClick={() => setShowKorean(true)}
                 >
-                  Korean
+                  {t("language.korean")}
                 </FileTabButton>
                 <FileTabButton
                   type="button"
                   $active={!showKorean}
                   onClick={() => setShowKorean(false)}
                 >
-                  English
+                  {t("language.english")}
                 </FileTabButton>
               </>
             ) : (
               <FileTabButton type="button" $active>
-                English
+                {t("language.english")}
               </FileTabButton>
             )}
           </FileTabs>
           {showKorean && canTranslate && (
-            <TranslationNotice>AI가 번역한 내용입니다</TranslationNotice>
+            <TranslationNotice>{t("releaseCard.translationNotice")}</TranslationNotice>
           )}
           <Markdown
             content={showKorean && canTranslate ? release.contentKo ?? "" : release.content}

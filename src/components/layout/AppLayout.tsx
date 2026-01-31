@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import TechStackSidebar from "@/features/tech-stacks/components/TechStackSidebar";
 import Header from "./Header";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -124,13 +125,14 @@ const MenuButton = styled.button`
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isInitialized = useAuthStore((state) => state.isInitialized);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { t } = useStableTranslation();
 
   return (
     <LayoutWrap>
       <HeaderWrap>
         <Header
           menuButton={
-            <MenuButton onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="메뉴">
+            <MenuButton onClick={() => setSidebarOpen(!sidebarOpen)} aria-label={t("menu.open")}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 12h18M3 6h18M3 18h18" />
               </svg>
@@ -153,4 +155,3 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </LayoutWrap>
   );
 }
-

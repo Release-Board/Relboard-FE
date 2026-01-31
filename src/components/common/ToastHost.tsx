@@ -1,6 +1,7 @@
 "use client";
 
 import styled, { keyframes } from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import { useToastStore } from "@/lib/store/toastStore";
 
 const fadeIn = keyframes`
@@ -58,6 +59,7 @@ const ToneLabel = styled.span<{ $tone: "success" | "error" | "info" }>`
 
 export default function ToastHost() {
   const toasts = useToastStore((state) => state.toasts);
+  const { t } = useStableTranslation();
 
   if (toasts.length === 0) return null;
 
@@ -66,7 +68,11 @@ export default function ToastHost() {
       {toasts.map((toast) => (
         <Toast key={toast.id} $tone={toast.tone}>
           <ToneLabel $tone={toast.tone}>
-            {toast.tone === "success" ? "완료" : toast.tone === "error" ? "오류" : "안내"}
+            {toast.tone === "success"
+              ? t("toast.success")
+              : toast.tone === "error"
+                ? t("toast.error")
+                : t("toast.info")}
           </ToneLabel>
           {" "}
           {toast.message}

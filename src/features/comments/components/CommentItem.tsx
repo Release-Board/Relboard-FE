@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import type { CommentResponse } from "@/lib/api/types";
 import {
@@ -57,6 +58,7 @@ export default function CommentItem({
   const [replyContent, setReplyContent] = useState("");
   const [editingContent, setEditingContent] = useState(comment.content);
   const [isEditing, setIsEditing] = useState(false);
+  const { t } = useStableTranslation();
 
   const hasChildren = comment.children?.length > 0;
   const isCollapsed = collapsedIds.has(comment.id);
@@ -113,10 +115,10 @@ export default function CommentItem({
                     }}
                     disabled={!editingContent.trim()}
                   >
-                    저장
+                    {t("common.save")}
                   </InlineButton>
                   <InlineButton type="button" onClick={() => setIsEditing(false)}>
-                    취소
+                    {t("common.cancel")}
                   </InlineButton>
                 </InlineActions>
               </>
@@ -135,7 +137,7 @@ export default function CommentItem({
                 <Actions>
                   {canInteract && !comment.isDeleted && (
                     <ActionButton type="button" onClick={() => setIsReplying(!isReplying)}>
-                      답글 달기
+                      {t("comments.reply")}
                     </ActionButton>
                   )}
                   {isMine && !comment.isDeleted && (
@@ -147,10 +149,10 @@ export default function CommentItem({
                           setEditingContent(comment.content);
                         }}
                       >
-                        수정
+                        {t("comments.edit")}
                       </ActionButton>
                       <ActionButton type="button" onClick={() => onDelete(comment.id)}>
-                        삭제
+                        {t("comments.delete")}
                       </ActionButton>
                     </>
                   )}
@@ -164,12 +166,12 @@ export default function CommentItem({
                   value={replyContent}
                   onChange={(event) => setReplyContent(event.target.value)}
                   onInput={handleAutoResize}
-                  placeholder="답글을 입력하세요..."
+                  placeholder={t("comments.replyPlaceholder")}
                   maxLength={500}
                 />
                 <InlineActions>
                   <InlineButton type="button" onClick={handleSubmitReply} disabled={!replyContent.trim()}>
-                    등록
+                    {t("common.register")}
                   </InlineButton>
                   <InlineButton
                     type="button"
@@ -178,7 +180,7 @@ export default function CommentItem({
                       setReplyContent("");
                     }}
                   >
-                    취소
+                    {t("common.cancel")}
                   </InlineButton>
                 </InlineActions>
               </>
@@ -186,7 +188,7 @@ export default function CommentItem({
 
             {isCollapsed && hasChildren && (
               <CollapseButton type="button" onClick={() => onToggleCollapse(comment.id)}>
-                {comment.children.length}개의 답글 더보기...
+                {t("comments.moreReplies", { count: comment.children.length })}
               </CollapseButton>
             )}
           </CommentBody>

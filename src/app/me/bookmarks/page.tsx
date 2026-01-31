@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import ReleaseCard from "@/features/releases/components/ReleaseCard";
 import { useBookmarks } from "@/features/bookmarks/hooks/useBookmarks";
@@ -134,6 +135,7 @@ const LoginLink = styled(Link)`
 
 export default function MyBookmarksPage() {
   const { user } = useAuthStore();
+  const { t } = useStableTranslation();
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [sort, setSort] = useState<"bookmarked" | "publishedDesc" | "publishedAsc">(
@@ -160,12 +162,12 @@ export default function MyBookmarksPage() {
     return (
       <Section>
         <Heading>
-          <Title>북마크</Title>
-          <Sub>다시 보고 싶은 릴리즈를 모아볼 수 있어요.</Sub>
+          <Title>{t("bookmarks.title")}</Title>
+          <Sub>{t("bookmarks.subtitle")}</Sub>
         </Heading>
         <StateMessage>
-          로그인 후 북마크 목록을 확인할 수 있어요.{" "}
-          <LoginLink href="/login">로그인하기</LoginLink>
+          {t("bookmarks.loginPrompt")}{" "}
+          <LoginLink href="/login">{t("bookmarks.loginLink")}</LoginLink>
         </StateMessage>
       </Section>
     );
@@ -176,22 +178,22 @@ export default function MyBookmarksPage() {
       <Heading>
         <HeaderRow>
           <div>
-            <Title>북마크</Title>
-            <Sub>다시 보고 싶은 릴리즈를 모아볼 수 있어요.</Sub>
+            <Title>{t("bookmarks.title")}</Title>
+            <Sub>{t("bookmarks.subtitle")}</Sub>
           </div>
           <Toolbar>
-            <Count>총 {totalElements}개</Count>
+            <Count>{t("bookmarks.totalCount", { count: totalElements })}</Count>
             <Divider />
             <Select
               value={sort}
               onChange={(event) =>
                 setSort(event.target.value as "bookmarked" | "publishedDesc" | "publishedAsc")
               }
-              aria-label="정렬 기준"
+              aria-label={t("bookmarks.sortLabel")}
             >
-              <option value="bookmarked">북마크 순</option>
-              <option value="publishedDesc">최신 릴리즈</option>
-              <option value="publishedAsc">오래된 릴리즈</option>
+              <option value="bookmarked">{t("bookmarks.sortBookmarked")}</option>
+              <option value="publishedDesc">{t("bookmarks.sortPublishedDesc")}</option>
+              <option value="publishedAsc">{t("bookmarks.sortPublishedAsc")}</option>
             </Select>
             <Select
               value={size}
@@ -199,23 +201,23 @@ export default function MyBookmarksPage() {
                 setPage(0);
                 setSize(Number(event.target.value));
               }}
-              aria-label="페이지당 개수"
+              aria-label={t("bookmarks.perPageLabel")}
             >
-              <option value={10}>10개씩</option>
-              <option value={20}>20개씩</option>
-              <option value={40}>40개씩</option>
+              <option value={10}>{t("bookmarks.perPage10")}</option>
+              <option value={20}>{t("bookmarks.perPage20")}</option>
+              <option value={40}>{t("bookmarks.perPage40")}</option>
             </Select>
             <RefreshButton type="button" onClick={() => refetch()}>
-              새로고침
+              {t("common.refresh")}
             </RefreshButton>
           </Toolbar>
         </HeaderRow>
       </Heading>
 
-      {isLoading && <StateMessage>북마크 목록을 불러오는 중...</StateMessage>}
+      {isLoading && <StateMessage>{t("bookmarks.loading")}</StateMessage>}
 
       {!isLoading && bookmarks.length === 0 && (
-        <StateMessage>북마크한 릴리즈가 아직 없습니다.</StateMessage>
+        <StateMessage>{t("bookmarks.empty")}</StateMessage>
       )}
 
       <List>
@@ -231,7 +233,7 @@ export default function MyBookmarksPage() {
             onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
             disabled={currentPage <= 0}
           >
-            이전
+            {t("common.previous")}
           </PageButton>
           <PageInfo>
             {currentPage + 1} / {totalPages}
@@ -241,7 +243,7 @@ export default function MyBookmarksPage() {
             onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
             disabled={currentPage + 1 >= totalPages}
           >
-            다음
+            {t("common.next")}
           </PageButton>
         </Pagination>
       )}

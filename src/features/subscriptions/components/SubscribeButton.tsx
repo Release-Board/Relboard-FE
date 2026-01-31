@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import type { TechStackResponse } from "@/lib/api/types";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -89,6 +90,7 @@ type Props = {
 export default function SubscribeButton({ techStack }: Props) {
   const router = useRouter();
   const { user, accessToken } = useAuthStore();
+  const { t } = useStableTranslation();
   const { isSubscribed, subscribe, unsubscribe } = useSubscriptions();
   const subscribed = isSubscribed(techStack.id);
   const isPending = subscribe.isPending || unsubscribe.isPending;
@@ -118,27 +120,27 @@ export default function SubscribeButton({ techStack }: Props) {
         $active={subscribed}
         onClick={handleClick}
         disabled={isPending}
-        aria-label={subscribed ? "구독 해제" : "구독"}
-        title={subscribed ? "구독중" : "구독"}
+        aria-label={subscribed ? t("subscribe.unsubscribe") : t("subscribe.subscribe")}
+        title={subscribed ? t("subscribe.subscribed") : t("subscribe.subscribe")}
       >
         <Icon $active={subscribed} viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 3.6l2.5 5.05 5.58.81-4.04 3.94.95 5.55L12 16.9l-4.99 2.62.95-5.55-4.04-3.94 5.58-.81L12 3.6z" />
         </Icon>
-        {subscribed ? "구독중" : "구독"}
+        {subscribed ? t("subscribe.subscribed") : t("subscribe.subscribe")}
       </Button>
 
       <Modal
         open={confirmOpen}
-        title="구독을 취소하시겠습니까?"
-        description="구독을 해제하면 해당 스택의 업데이트를 놓칠 수 있어요."
+        title={t("subscribe.confirmTitle")}
+        description={t("subscribe.confirmDescription")}
         onClose={() => setConfirmOpen(false)}
         actions={
           <>
             <SecondaryButton type="button" onClick={() => setConfirmOpen(false)}>
-              취소
+              {t("subscribe.cancel")}
             </SecondaryButton>
             <DangerButton type="button" onClick={handleConfirmUnsubscribe}>
-              구독 취소
+              {t("subscribe.unsubscribe")}
             </DangerButton>
           </>
         }

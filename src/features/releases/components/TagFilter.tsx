@@ -1,6 +1,7 @@
 "use client";
 
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import type { TagType } from "@/lib/api/types";
 import { getTagStyle } from "@/styles/semantic-tags";
 
@@ -35,8 +36,8 @@ const FilterButton = styled.button<{ $active: boolean; $tone: string; $bg: strin
     `}
 `;
 
-const tags: Array<{ label: string; value: TagType | "ALL" }> = [
-  { label: "전체", value: "ALL" },
+const tagValues: Array<{ label: string; value: TagType | "ALL" }> = [
+  { label: "all", value: "ALL" },
   { label: "Breaking", value: "BREAKING" },
   { label: "Security", value: "SECURITY" },
   { label: "Feature", value: "FEATURE" },
@@ -50,6 +51,7 @@ type Props = {
 
 export default function TagFilter({ value, onChange }: Props) {
   const isAll = value.length === 0;
+  const { t } = useStableTranslation();
 
   const handleToggle = (tagValue: TagType | "ALL") => {
     if (tagValue === "ALL") {
@@ -66,7 +68,7 @@ export default function TagFilter({ value, onChange }: Props) {
 
   return (
     <FilterWrap>
-      {tags.map((tag) => {
+      {tagValues.map((tag) => {
         const style = getTagStyle(tag.value);
         const isActive = tag.value === "ALL" ? isAll : value.includes(tag.value as TagType);
 
@@ -79,7 +81,7 @@ export default function TagFilter({ value, onChange }: Props) {
             $bg={style.background}
             onClick={() => handleToggle(tag.value)}
           >
-            {tag.label}
+            {tag.value === "ALL" ? t("tag.all") : tag.label}
           </FilterButton>
         );
       })}

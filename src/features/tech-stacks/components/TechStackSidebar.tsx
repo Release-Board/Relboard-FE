@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import { fetchTechStacks, fetchMySubscriptions } from "@/lib/api/relboard";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -98,6 +99,7 @@ export default function TechStackSidebar() {
   const searchParams = useSearchParams();
   const activeCategory = searchParams.get("category");
   const { user } = useAuthStore();
+  const { t } = useStableTranslation();
 
   const { data: techStacks } = useQuery({
     queryKey: ["tech-stacks"],
@@ -122,12 +124,12 @@ export default function TechStackSidebar() {
   return (
     <Container>
       <Section>
-        <Title>All Categories</Title>
+        <Title>{t("sidebar.allCategories")}</Title>
         <List>
           <li>
             <NavLink href="/" $active={pathname === "/" && !activeCategory}>
               <Row>
-                All Categories
+                {t("sidebar.allCategories")}
                 <Count>{totalCount}</Count>
               </Row>
             </NavLink>
@@ -152,7 +154,7 @@ export default function TechStackSidebar() {
         <>
           <Divider />
           <Section>
-            <Title>Following</Title>
+            <Title>{t("sidebar.following")}</Title>
             <ChipList>
               {subscriptions.map((techStack) => (
                 <Chip key={techStack.id} href={`/tech-stacks/${techStack.name}`}>
@@ -166,4 +168,3 @@ export default function TechStackSidebar() {
     </Container>
   );
 }
-

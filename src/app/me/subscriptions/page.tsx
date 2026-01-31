@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
 import { useSubscriptions } from "@/features/subscriptions/hooks/useSubscriptions";
@@ -84,17 +85,18 @@ const LoginLink = styled(Link)`
 export default function MySubscriptionsPage() {
   const { user } = useAuthStore();
   const { subscriptions, isLoading } = useSubscriptions();
+  const { t } = useStableTranslation();
 
   if (!user) {
     return (
       <Section>
         <Heading>
-          <Title>내 구독 목록</Title>
-          <Sub>관심 있는 기술 스택을 모아볼 수 있어요.</Sub>
+          <Title>{t("subscriptions.title")}</Title>
+          <Sub>{t("subscriptions.subtitle")}</Sub>
         </Heading>
         <StateMessage>
-          로그인 후 구독 목록을 확인할 수 있어요.{" "}
-          <LoginLink href="/login">로그인하기</LoginLink>
+          {t("subscriptions.loginPrompt")}{" "}
+          <LoginLink href="/login">{t("subscriptions.loginLink")}</LoginLink>
         </StateMessage>
       </Section>
     );
@@ -103,14 +105,14 @@ export default function MySubscriptionsPage() {
   return (
     <Section>
       <Heading>
-        <Title>내 구독 목록</Title>
-        <Sub>관심 있는 기술 스택을 모아볼 수 있어요.</Sub>
+        <Title>{t("subscriptions.title")}</Title>
+        <Sub>{t("subscriptions.subtitle")}</Sub>
       </Heading>
 
-      {isLoading && <StateMessage>구독 목록을 불러오는 중...</StateMessage>}
+      {isLoading && <StateMessage>{t("subscriptions.loading")}</StateMessage>}
 
       {!isLoading && subscriptions.length === 0 && (
-        <StateMessage>구독한 기술 스택이 아직 없습니다.</StateMessage>
+        <StateMessage>{t("subscriptions.empty")}</StateMessage>
       )}
 
       <List>
@@ -121,7 +123,10 @@ export default function MySubscriptionsPage() {
                 {stack.name}
               </StackName>
               <StackMeta>
-                최신 버전 {stack.latestVersion} · {stack.category}
+                {t("subscriptions.latestVersion", {
+                  version: stack.latestVersion,
+                  category: stack.category,
+                })}
               </StackMeta>
             </StackInfo>
             <SubscribeButton techStack={stack} />

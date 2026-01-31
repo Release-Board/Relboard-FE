@@ -4,6 +4,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { useSearchParams } from "next/navigation";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import { fetchReleases } from "@/lib/api/relboard";
 import type { TagType } from "@/lib/api/types";
@@ -39,6 +40,7 @@ export default function ReleaseTimeline() {
   const [categories, setCategories] = useState<string[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const searchParams = useSearchParams();
+  const { t } = useStableTranslation();
   const categoryParam = searchParams.get("category");
   const keywordParam = searchParams.get("keyword") ?? "";
 
@@ -97,11 +99,11 @@ export default function ReleaseTimeline() {
         ))}
 
       {isError && (
-        <StateMessage>데이터를 불러오지 못했습니다.</StateMessage>
+        <StateMessage>{t("releaseTimeline.loadError")}</StateMessage>
       )}
 
       {!isLoading && releases.length === 0 && (
-        <StateMessage>표시할 릴리즈가 없습니다.</StateMessage>
+        <StateMessage>{t("releaseTimeline.empty")}</StateMessage>
       )}
 
       {releases.map((release) => (

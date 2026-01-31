@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import { fetchTechStackReleases, fetchTechStacks } from "@/lib/api/relboard";
 import type { TagType } from "@/lib/api/types";
@@ -60,6 +61,7 @@ type Props = {
 export default function TechStackTimeline({ techStackName }: Props) {
   const [tags, setTags] = useState<TagType[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const { t } = useStableTranslation();
 
   const { data: techStacks } = useQuery({
     queryKey: ["tech-stacks"],
@@ -115,7 +117,7 @@ export default function TechStackTimeline({ techStackName }: Props) {
           <Title>{techStackName}</Title>
           {currentStack && <SubscribeButton techStack={currentStack} />}
         </TitleRow>
-        <Sub>해당 스택의 최신 릴리즈 히스토리를 확인하세요.</Sub>
+        <Sub>{t("techStack.subtitle")}</Sub>
       </Heading>
 
       <TagFilter value={tags} onChange={setTags} />
@@ -125,10 +127,10 @@ export default function TechStackTimeline({ techStackName }: Props) {
           <ReleaseCardSkeleton key={`tech-skeleton-${index}`} />
         ))}
 
-      {isError && <StateMessage>데이터를 불러오지 못했습니다.</StateMessage>}
+      {isError && <StateMessage>{t("techStack.loadError")}</StateMessage>}
 
       {!isLoading && releases.length === 0 && (
-        <StateMessage>표시할 릴리즈가 없습니다.</StateMessage>
+        <StateMessage>{t("techStack.empty")}</StateMessage>
       )}
 
       {releases.map((release) => (

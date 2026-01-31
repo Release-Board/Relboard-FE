@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import type { ReleaseResponse } from "@/lib/api/types";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -51,6 +52,7 @@ type Props = {
 export default function BookmarkButton({ release }: Props) {
   const router = useRouter();
   const { user, accessToken } = useAuthStore();
+  const { t } = useStableTranslation();
   const { isBookmarked, addBookmark, removeBookmark } = useBookmarks({
     page: 0,
     size: 200,
@@ -67,13 +69,13 @@ export default function BookmarkButton({ release }: Props) {
 
     if (bookmarked) {
       removeBookmark.mutate(release, {
-        onSuccess: () => toast("북마크를 해제했어요.", { tone: "info" }),
-        onError: () => toast("북마크 해제에 실패했어요.", { tone: "error" }),
+        onSuccess: () => toast(t("toast.bookmarkRemoved"), { tone: "info" }),
+        onError: () => toast(t("toast.bookmarkRemoveFail"), { tone: "error" }),
       });
     } else {
       addBookmark.mutate(release, {
-        onSuccess: () => toast("북마크에 저장했어요.", { tone: "success" }),
-        onError: () => toast("북마크 저장에 실패했어요.", { tone: "error" }),
+        onSuccess: () => toast(t("toast.bookmarkAdded"), { tone: "success" }),
+        onError: () => toast(t("toast.bookmarkAddFail"), { tone: "error" }),
       });
     }
   };
@@ -85,8 +87,8 @@ export default function BookmarkButton({ release }: Props) {
       onClick={handleClick}
       disabled={isPending}
       aria-pressed={bookmarked}
-      aria-label={bookmarked ? "북마크 취소" : "북마크"}
-      title={bookmarked ? "북마크됨" : "북마크"}
+      aria-label={bookmarked ? t("bookmark.remove") : t("bookmark.label")}
+      title={bookmarked ? t("bookmark.active") : t("bookmark.label")}
     >
       <Icon $active={bookmarked} viewBox="0 0 24 24" aria-hidden="true">
         <path d="M6 3.5h12a1.5 1.5 0 0 1 1.5 1.5v15.2a.3.3 0 0 1-.47.25L12 16.2l-7.03 4.25a.3.3 0 0 1-.47-.25V5A1.5 1.5 0 0 1 6 3.5z" />

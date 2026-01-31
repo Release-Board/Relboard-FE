@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import styled, { keyframes } from "styled-components";
 import { useState } from "react";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import { fetchTrendingReleases, trackReleaseView } from "@/lib/api/relboard";
 import type { ReleaseResponse } from "@/lib/api/types";
@@ -254,18 +255,19 @@ const PrimaryLink = styled.a`
   }
 `;
 
-function formatMetaCount(value?: number, suffix?: string) {
+function formatMetaCount(value: number | undefined, locale: string) {
   if (value === undefined || value === null) return "-";
   if (value >= 1000) {
-    return `${(value / 1000).toFixed(1)}천${suffix ?? ""}`;
+    const formatted = (value / 1000).toFixed(1);
+    return locale.startsWith("ko") ? `${formatted}천` : `${formatted}k`;
   }
-  return `${value}${suffix ?? ""}`;
+  return `${value}`;
 }
 
-function formatDate(value: string) {
+function formatDate(value: string, locale: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("ko-KR", {
+  return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -277,34 +279,34 @@ export default function TrendingSection() {
   const [selectedRelease, setSelectedRelease] = useState<ReleaseResponse | null>(
     null
   );
+  const { t, language } = useStableTranslation();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["trending-releases", period, 5],
     queryFn: () => fetchTrendingReleases({ period, limit: 5 }),
   });
 
-  const periodLabel = period === "WEEKLY" ? "이번 주" : "오늘";
   const areas = ["hero", "second", "third", "fourth", "fifth"];
 
   return (
     <Section>
       <TitleRow>
-        <Title>{periodLabel} 핫한 릴리즈</Title>
-        <PeriodToggle role="tablist" aria-label="트렌딩 기간 선택">
+        <Title>{period === "WEEKLY" ? t("trending.titleWeekly") : t("trending.titleDaily")}</Title>
+        <PeriodToggle role="tablist" aria-label={t("trending.toggleLabel")}>
           <ToggleIndicator $active={period} />
           <ToggleButton
             type="button"
             $active={period === "WEEKLY"}
             onClick={() => setPeriod("WEEKLY")}
           >
-            WEEKLY
+            {t("trending.periodWeekly")}
           </ToggleButton>
           <ToggleButton
             type="button"
             $active={period === "DAILY"}
             onClick={() => setPeriod("DAILY")}
           >
-            DAILY
+            {t("trending.periodDaily")}
           </ToggleButton>
         </PeriodToggle>
       </TitleRow>
@@ -318,11 +320,13 @@ export default function TrendingSection() {
       )}
 
       {!isLoading && isError && (
-        <StateMessage>지금은 인기 릴리즈를 불러오지 못했어요.</StateMessage>
+        <StateMessage>{t("trending.loadError")}</StateMessage>
       )}
 
       {!isLoading && !isError && (!data || data.length === 0) && (
-        <StateMessage>{periodLabel} 핫한 릴리즈가 아직 없습니다.</StateMessage>
+        <StateMessage>
+          {period === "WEEKLY" ? t("trending.emptyWeekly") : t("trending.emptyDaily")}
+        </StateMessage>
       )}
 
       {!isLoading && !isError && data && data.length > 0 && (
@@ -348,11 +352,19 @@ export default function TrendingSection() {
                 v{release.version}
               </ReleaseTitle>
               <Meta>
-                <span>{formatDate(release.publishedAt)}</span>
+                <span>{formatDate(release.publishedAt, language)}</span>
               </Meta>
               <Meta>
-                <span>조회 {formatMetaCount(release.viewCount)}</span>
-                <span>북마크 {formatMetaCount(release.bookmarkCount)}</span>
+                <span>
+                  {t("trending.viewCount", {
+                    count: formatMetaCount(release.viewCount, language),
+                  })}
+                </span>
+                <span>
+                  {t("trending.bookmarkCount", {
+                    count: formatMetaCount(release.bookmarkCount, language),
+                  })}
+                </span>
               </Meta>
             </Card>
           ))}
@@ -369,11 +381,11 @@ export default function TrendingSection() {
         actions={
           <ModalActions>
             <SecondaryButton type="button" onClick={() => setSelectedRelease(null)}>
-              닫기
+              {t("common.close")}
             </SecondaryButton>
             {selectedRelease && (
               <PrimaryLink href={selectedRelease.sourceUrl} target="_blank" rel="noreferrer">
-                원문 보기
+                {t("common.viewChangelog")}
               </PrimaryLink>
             )}
           </ModalActions>
@@ -383,9 +395,17 @@ export default function TrendingSection() {
           <>
             <ModalMeta>
               <span>v{selectedRelease.version}</span>
-              <span>{formatDate(selectedRelease.publishedAt)}</span>
-              <span>조회 {formatMetaCount(selectedRelease.viewCount)}</span>
-              <span>북마크 {formatMetaCount(selectedRelease.bookmarkCount)}</span>
+              <span>{formatDate(selectedRelease.publishedAt, language)}</span>
+              <span>
+                {t("trending.viewCount", {
+                  count: formatMetaCount(selectedRelease.viewCount, language),
+                })}
+              </span>
+              <span>
+                {t("trending.bookmarkCount", {
+                  count: formatMetaCount(selectedRelease.bookmarkCount, language),
+                })}
+              </span>
             </ModalMeta>
             <Markdown
               content={selectedRelease.contentKo || selectedRelease.content || ""}

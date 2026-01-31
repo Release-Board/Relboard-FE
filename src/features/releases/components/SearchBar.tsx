@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 const SearchWrap = styled.div`
   position: relative;
@@ -37,6 +38,7 @@ type Props = {
 
 export default function SearchBar({ keyword, onChange }: Props) {
     const [value, setValue] = useState(keyword);
+    const { t } = useStableTranslation();
 
     // Sync internal state if prop changes
     useEffect(() => {
@@ -58,7 +60,7 @@ export default function SearchBar({ keyword, onChange }: Props) {
         <SearchWrap>
             <Input
                 type="text"
-                placeholder="검색어 입력 (제목, 내용)"
+                placeholder={t("search.placeholder")}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
             />

@@ -3,6 +3,7 @@
 import { useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
+import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import { useAuthStore } from "@/lib/store/authStore";
 import { fetchUser } from "@/lib/api/client";
 
@@ -18,6 +19,7 @@ function CallbackContent() {
     const router = useRouter();
     const processed = useRef(false);
     const { login } = useAuthStore();
+    const { t } = useStableTranslation();
 
     useEffect(() => {
         if (processed.current) return;
@@ -54,12 +56,13 @@ function CallbackContent() {
         processLogin();
     }, [router, login]);
 
-    return <Container>로그인 중입니다...</Container>;
+    return <Container>{t("auth.loggingIn")}</Container>;
 }
 
 export default function AuthCallbackPage() {
+    const { t } = useStableTranslation();
     return (
-        <Suspense fallback={<Container>로딩중...</Container>}>
+        <Suspense fallback={<Container>{t("auth.loading")}</Container>}>
             <CallbackContent />
         </Suspense>
     );
