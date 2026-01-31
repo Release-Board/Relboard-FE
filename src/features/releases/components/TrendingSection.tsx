@@ -8,6 +8,7 @@ import { fetchTrendingReleases, trackReleaseView } from "@/lib/api/relboard";
 import type { ReleaseResponse } from "@/lib/api/types";
 import Modal from "@/components/common/Modal";
 import Markdown from "@/components/Markdown";
+import CommentsSection from "@/features/comments/components/CommentsSection";
 
 const Section = styled.section`
   display: grid;
@@ -377,7 +378,7 @@ export default function TrendingSection() {
             )}
           </ModalActions>
         }
-      >
+      > 
         {selectedRelease && (
           <>
             <ModalMeta>
@@ -389,6 +390,7 @@ export default function TrendingSection() {
             <Markdown
               content={selectedRelease.contentKo || selectedRelease.content || ""}
             />
+            <CommentsSection releaseId={selectedRelease.id} />
           </>
         )}
       </Modal>

@@ -9,6 +9,7 @@ import { getTagStyleByTagType } from "@/styles/semantic-tags";
 import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
 import BookmarkButton from "@/features/bookmarks/components/BookmarkButton";
 import { trackReleaseView } from "@/lib/api/relboard";
+import CommentsSection from "@/features/comments/components/CommentsSection";
 
 const Card = styled.article`
   border-radius: ${({ theme }) => theme.radii.lg};
@@ -292,6 +293,7 @@ export default function ReleaseCard({ release }: Props) {
             <TranslationNotice>AI가 번역한 내용입니다</TranslationNotice>
           )}
           <Markdown content={showKorean && canTranslate ? release.contentKo ?? "" : release.content} />
+          <CommentsSection releaseId={release.id} />
         </MarkdownPanel>
       )}
     </Card>
