@@ -84,6 +84,10 @@ export type User = {
   email: string | null;
   nickname: string;
   profileImageUrl: string | null;
+  profileImageType?: "URL" | "DEFAULT" | "FILE" | null;
+  bio?: string | null;
+  githubUrl?: string | null;
+  websiteUrl?: string | null;
   role: "USER" | "ADMIN";
 };
 

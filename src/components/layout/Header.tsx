@@ -4,7 +4,7 @@ import styled from "styled-components";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store/authStore";
 import { logout } from "@/lib/api/client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import { Moon, Sun } from "lucide-react";
@@ -138,11 +138,26 @@ const Button = styled.button`
   }
 `;
 
-const Profile = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+const ProfileMenuWrap = styled.div`
+  position: relative;
+  display: inline-flex;
+`;
+
+const ProfileButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceRaised};
+  }
 `;
 
 const Avatar = styled.img`
@@ -167,6 +182,48 @@ const AvatarFallback = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
+const ProfileMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.soft};
+  padding: 8px;
+  display: grid;
+  gap: 4px;
+  z-index: 200;
+`;
+
+const MenuLink = styled(Link)`
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceRaised};
+  }
+`;
+
+const MenuButton = styled.button`
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.text};
+  text-align: left;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceRaised};
+  }
+`;
+
 type HeaderProps = {
   menuButton?: React.ReactNode;
 };
@@ -182,6 +239,8 @@ export default function Header({ menuButton }: HeaderProps) {
   const toggleTheme = useThemeStore((state) => state.toggle);
   const language = useLanguageStore((state) => state.language);
   const toggleLanguage = useLanguageStore((state) => state.toggle);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement | null>(null);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchKeyword.trim().length >= 2) {
@@ -201,6 +260,17 @@ export default function Header({ menuButton }: HeaderProps) {
       console.error(e);
     }
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!profileRef.current) return;
+      if (event.target instanceof Node && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (!mounted || !isInitialized) {
     return (
@@ -271,24 +341,33 @@ export default function Header({ menuButton }: HeaderProps) {
           </IconButton>
           {user ? (
             <>
-              <Profile>
-                {user.profileImageUrl && (
-                  <Avatar
-                    src={user.profileImageUrl}
-                    alt={`${user.nickname} 프로필 이미지`}
-                  />
+              <ProfileMenuWrap ref={profileRef}>
+                <ProfileButton type="button" onClick={() => setProfileOpen((prev) => !prev)}>
+                  {user.profileImageUrl && (
+                    <Avatar
+                      src={user.profileImageUrl}
+                      alt={`${user.nickname} 프로필 이미지`}
+                    />
+                  )}
+                  {!user.profileImageUrl && (
+                    <AvatarFallback aria-hidden="true">
+                      {user.nickname?.trim().slice(0, 1) || "U"}
+                    </AvatarFallback>
+                  )}
+                  <span>
+                    {user.nickname}
+                    {t("header.profileSuffix")}
+                  </span>
+                </ProfileButton>
+                {profileOpen && (
+                  <ProfileMenu>
+                    <MenuLink href="/me/profile">{t("header.profileEdit")}</MenuLink>
+                    <MenuButton type="button" onClick={handleLogout}>
+                      {t("header.logout")}
+                    </MenuButton>
+                  </ProfileMenu>
                 )}
-                {!user.profileImageUrl && (
-                  <AvatarFallback aria-hidden="true">
-                    {user.nickname?.trim().slice(0, 1) || "U"}
-                  </AvatarFallback>
-                )}
-                <span>
-                  {user.nickname}
-                  {t("header.profileSuffix")}
-                </span>
-              </Profile>
-              <Button onClick={handleLogout}>{t("header.logout")}</Button>
+              </ProfileMenuWrap>
             </>
           ) : (
             <Button onClick={() => (window.location.href = "/login")}>

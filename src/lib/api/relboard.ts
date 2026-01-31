@@ -1,4 +1,5 @@
 import { API_BASE_URL, fetchJson } from "./client";
+import { useAuthStore } from "@/lib/store/authStore";
 import type {
   CommonApiResponse,
   BookmarkResult,
@@ -11,6 +12,7 @@ import type {
   SubscriptionResult,
   TagType,
   TechStackResponse,
+  User,
 } from "./types";
 
 export type ReleaseListParams = {
@@ -291,6 +293,85 @@ export async function deleteComment(commentId: string) {
 
   if (!response.success) {
     throw new Error(response.error?.message ?? "Failed to delete comment");
+  }
+
+  return response.data;
+}
+
+export type ProfileUpdatePayload = {
+  nickname?: string;
+  bio?: string | null;
+  githubUrl?: string | null;
+  websiteUrl?: string | null;
+  email?: string | null;
+  profileImageType?: "URL" | "DEFAULT";
+  profileImageUrl?: string | null;
+};
+
+export async function fetchMyProfile() {
+  const response = await fetchJson<CommonApiResponse<User>>("/api/v1/users/me");
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to fetch profile");
+  }
+  return response.data;
+}
+
+export async function updateMyProfile(payload: ProfileUpdatePayload) {
+  const response = await fetchJson<CommonApiResponse<{ updated: boolean }>>(
+    "/api/v1/users/me/profile",
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to update profile");
+  }
+
+  return response.data;
+}
+
+export async function uploadProfileImage(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/users/me/profile-image`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+    headers: (() => {
+      const headers = new Headers();
+      const authStore = useAuthStore.getState();
+      if (authStore.accessToken) {
+        headers.set("Authorization", `Bearer ${authStore.accessToken}`);
+      }
+      return headers;
+    })(),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const body = (await response.json()) as CommonApiResponse<{ profileImageUrl: string }>;
+  if (!body.success) {
+    throw new Error(body.error?.message ?? "Failed to upload profile image");
+  }
+
+  return body.data;
+}
+
+export async function deleteProfileImage() {
+  const response = await fetchJson<CommonApiResponse<{ updated: boolean }>>(
+    "/api/v1/users/me/profile-image",
+    {
+      method: "DELETE",
+    }
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to delete profile image");
   }
 
   return response.data;
