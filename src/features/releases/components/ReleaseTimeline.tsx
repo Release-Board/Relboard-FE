@@ -3,6 +3,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
+import { useSearchParams } from "next/navigation";
 
 import { fetchReleases } from "@/lib/api/relboard";
 import type { TagType } from "@/lib/api/types";
@@ -10,27 +11,15 @@ import ReleaseCard from "./ReleaseCard";
 import ReleaseCardSkeleton from "./ReleaseCardSkeleton";
 import TagFilter from "./TagFilter";
 import CategoryFilter from "./CategoryFilter";
-import SearchBar from "./SearchBar";
 import TrendingSection from "./TrendingSection";
 
 const TimelineWrap = styled.section`
   display: grid;
-  gap: 20px;
+  gap: 16px;
 `;
 
 const Controls = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 8px;
-`;
-
-const FilterRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: center;
-  justify-content: space-between;
+  display: none;
 `;
 
 const StateMessage = styled.div`
@@ -48,13 +37,23 @@ const Sentinel = styled.div`
 export default function ReleaseTimeline() {
   const [tags, setTags] = useState<TagType[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [keyword, setKeyword] = useState("");
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+  const keywordParam = searchParams.get("keyword") ?? "";
+
+  useEffect(() => {
+    if (categoryParam) {
+      setCategories([categoryParam]);
+    } else {
+      setCategories([]);
+    }
+  }, [categoryParam]);
 
   const releasesQuery = useInfiniteQuery({
-    queryKey: ["releases", tags, categories, keyword],
+    queryKey: ["releases", tags, categories, keywordParam],
     queryFn: ({ pageParam = 0 }) =>
-      fetchReleases({ page: pageParam, size: 20, tags, categories, keyword }),
+      fetchReleases({ page: pageParam, size: 20, tags, categories, keyword: keywordParam || undefined }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.number + 1;
@@ -87,11 +86,8 @@ export default function ReleaseTimeline() {
   return (
     <TimelineWrap>
       <Controls>
-        <SearchBar keyword={keyword} onChange={setKeyword} />
         <TrendingSection />
-        <FilterRow>
-          <CategoryFilter value={categories} onChange={setCategories} />
-        </FilterRow>
+        <CategoryFilter value={categories} onChange={setCategories} />
         <TagFilter value={tags} onChange={setTags} />
       </Controls>
 
