@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 
 import Markdown from "@/components/Markdown";
@@ -12,47 +12,49 @@ import { trackReleaseView } from "@/lib/api/relboard";
 import CommentsSection from "@/features/comments/components/CommentsSection";
 
 const Card = styled.article`
-  border-radius: ${({ theme }) => theme.radii.lg};
+  border-radius: 14px;
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: 24px;
+  padding: 18px;
   display: grid;
-  gap: 14px;
+  gap: 10px;
   box-shadow: ${({ theme }) => theme.shadows.soft};
+  transition: all 150ms ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.borderHover};
+    transform: translateY(-2px);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+  }
 `;
 
 const Header = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 12px;
   align-items: center;
-  justify-content: space-between;
+`;
+
+const IconBox = styled.div<{ $bgColor?: string }>`
+  width: 40px;
+  height: 40px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ $bgColor, theme }) => $bgColor ?? theme.colors.surfaceRaised};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: #ffffff;
 `;
 
 const StackBadge = styled.span<{ $color?: string }>`
-  padding: 6px 12px;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ $color, theme }) =>
-    $color
-      ? `color-mix(in srgb, ${$color} 15%, ${theme.colors.surface})`
-      : "rgba(47, 107, 255, 0.12)"};
-  color: ${({ $color, theme }) => $color ?? theme.colors.accentStrong};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 600;
+  color: ${({ $color, theme }) => $color ?? theme.colors.muted};
   text-transform: uppercase;
-  border: 1px solid
-    ${({ $color, theme }) =>
-    $color
-      ? `color-mix(in srgb, ${$color} 45%, ${theme.colors.surface})`
-      : theme.colors.border};
-`;
-
-const VersionTitle = styled.h3`
-  margin: 0;
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.muted};
-  font-family: ${({ theme }) => theme.fonts.mono};
+  letter-spacing: 0.08em;
 `;
 
 const ReleaseTitle = styled.button`
@@ -60,8 +62,8 @@ const ReleaseTitle = styled.button`
   margin: 0;
   border: none;
   background: transparent;
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: 700;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.text};
   text-align: left;
   cursor: pointer;
@@ -71,11 +73,38 @@ const ReleaseTitle = styled.button`
   }
 `;
 
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const Badge = styled.span<{ $tone: "version" | "breaking" }>`
+  padding: 2px 8px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 500;
+  color: ${({ theme, $tone }) =>
+    $tone === "breaking" ? theme.colors.badgeBreakingText : theme.colors.textSecondary};
+  background: ${({ theme, $tone }) =>
+    $tone === "breaking" ? theme.colors.badgeBreakingBg : "transparent"};
+  border: 1px solid ${({ theme, $tone }) =>
+    $tone === "breaking" ? "transparent" : theme.colors.border};
+`;
+
+const Summary = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  line-height: 1.5;
+`;
+
 const Meta = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.muted};
 `;
 
@@ -85,31 +114,42 @@ const Tags = styled.div`
   gap: 8px;
 `;
 
-const Actions = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+const Tag = styled.span<{ $variant: TagType }>`
+  padding: 4px 10px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 600;
+  background: ${({ $variant }) => getTagStyleByTagType($variant).background};
+  color: ${({ $variant }) => getTagStyleByTagType($variant).color};
+  box-shadow: ${({ $variant }) => getTagStyleByTagType($variant).boxShadow};
+`;
+
+const Link = styled.a`
+  color: ${({ theme }) => theme.colors.muted};
+  font-weight: 600;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
 `;
 
 const HeaderActions = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+  ${Card}:hover & {
+    opacity: 1;
+  }
 `;
 
 const ExpandButton = styled.button`
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surface};
-  color: ${({ theme }) => theme.colors.accentStrong};
-  padding: 8px 14px;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+  border: none;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
   cursor: pointer;
-  transition: all 160ms ease;
 
   &:hover {
-    border-color: ${({ theme }) => theme.colors.accent};
-    color: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.text};
   }
 `;
 
@@ -119,7 +159,6 @@ const MarkdownPanel = styled.div`
   padding: 20px;
   background: ${({ theme }) => theme.colors.surfaceRaised};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-top: 2px solid ${({ theme }) => theme.colors.accentStrong};
   border-radius: ${({ theme }) => theme.radii.md};
 `;
 
@@ -170,21 +209,6 @@ const TranslationNotice = styled.div`
   font-weight: 600;
 `;
 
-const Tag = styled.span<{ $variant: TagType }>`
-  padding: 4px 10px;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: 600;
-  background: ${({ $variant }) => getTagStyleByTagType($variant).background};
-  color: ${({ $variant }) => getTagStyleByTagType($variant).color};
-  box-shadow: ${({ $variant }) => getTagStyleByTagType($variant).boxShadow};
-`;
-
-const Link = styled.a`
-  color: ${({ theme }) => theme.colors.accent};
-  font-weight: 600;
-`;
-
 function formatDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
@@ -206,6 +230,13 @@ export default function ReleaseCard({ release }: Props) {
   const canTranslate = Boolean(release.contentKo);
   const viewTrackedRef = useRef(false);
 
+  const summary = useMemo(() => {
+    if (release.title) return release.title;
+    const source = release.contentKo || release.content || "";
+    const firstLine = source.split("\n").find((line) => line.trim().length > 0) ?? "";
+    return firstLine;
+  }, [release.content, release.contentKo]);
+
   const trackViewOnce = () => {
     if (viewTrackedRef.current) return;
     viewTrackedRef.current = true;
@@ -221,32 +252,42 @@ export default function ReleaseCard({ release }: Props) {
   return (
     <Card>
       <Header>
-        <StackBadge $color={release.techStack.colorHex ?? undefined}>
-          {release.techStack.name}
-        </StackBadge>
+        <IconBox $bgColor={release.techStack.colorHex ?? undefined}>
+          {release.techStack.name.slice(0, 1).toUpperCase()}
+        </IconBox>
+        <div>
+          <ReleaseTitle
+            type="button"
+            onClick={() => {
+              trackViewOnce();
+              if (hasContent) {
+                setExpanded(true);
+              }
+            }}
+          >
+            {release.techStack.name}
+          </ReleaseTitle>
+        </div>
         <HeaderActions>
           <SubscribeButton techStack={release.techStack} />
           <BookmarkButton release={release} />
         </HeaderActions>
       </Header>
-      <ReleaseTitle
-        type="button"
-        onClick={() => {
-          trackViewOnce();
-          if (hasContent) {
-            setExpanded(true);
-          }
-        }}
-      >
-        {release.title || `v${release.version}`}
-      </ReleaseTitle>
-      <VersionTitle>v{release.version}</VersionTitle>
+
+      <TitleRow>
+        <Badge $tone="version">v{release.version}</Badge>
+        {release.tags.includes("BREAKING") && <Badge $tone="breaking">Breaking</Badge>}
+      </TitleRow>
+
+      {summary && <Summary>{summary}</Summary>}
+
       <Meta>
         <span>{formatDate(release.publishedAt)}</span>
         <Link href={release.sourceUrl} target="_blank" rel="noreferrer">
-          원문 보기
+          View changelog
         </Link>
       </Meta>
+
       <Tags>
         {release.tags.map((tag) => (
           <Tag key={tag} $variant={tag}>
@@ -256,11 +297,9 @@ export default function ReleaseCard({ release }: Props) {
       </Tags>
 
       {hasContent && (
-        <Actions>
-          <ExpandButton type="button" onClick={() => setExpanded((prev) => !prev)}>
-            {expanded ? "본문 닫기" : "본문 보기"}
-          </ExpandButton>
-        </Actions>
+        <ExpandButton type="button" onClick={() => setExpanded((prev) => !prev)}>
+          {expanded ? "Collapse" : "View details"}
+        </ExpandButton>
       )}
 
       {expanded && hasContent && (
@@ -292,7 +331,9 @@ export default function ReleaseCard({ release }: Props) {
           {showKorean && canTranslate && (
             <TranslationNotice>AI가 번역한 내용입니다</TranslationNotice>
           )}
-          <Markdown content={showKorean && canTranslate ? release.contentKo ?? "" : release.content} />
+          <Markdown
+            content={showKorean && canTranslate ? release.contentKo ?? "" : release.content}
+          />
           <CommentsSection releaseId={release.id} />
         </MarkdownPanel>
       )}
