@@ -10,32 +10,32 @@ export function getTagStyle(tag: TagType | "ALL") {
   switch (tag) {
     case "BREAKING":
       return {
-        color: "#ff4d4f",
-        background: "rgba(255, 77, 79, 0.12)",
-        boxShadow: "0 0 8px rgba(255, 77, 79, 0.4)",
+        color: "#ff6b6b",
+        background: "rgba(255, 107, 107, 0.16)",
+        boxShadow: "0 0 8px rgba(255, 107, 107, 0.45)",
       };
     case "SECURITY":
       return {
-        color: "#ff9f1c",
-        background: "rgba(255, 159, 28, 0.14)",
-        boxShadow: "0 0 8px rgba(255, 159, 28, 0.4)",
+        color: "#ffb347",
+        background: "rgba(255, 179, 71, 0.18)",
+        boxShadow: "0 0 8px rgba(255, 179, 71, 0.45)",
       };
     case "FEATURE":
       return {
-        color: "#2f6bff",
-        background: "rgba(47, 107, 255, 0.12)",
+        color: "#4f8bff",
+        background: "rgba(79, 139, 255, 0.16)",
         boxShadow: "none",
       };
     case "FIX":
       return {
-        color: "#12b886",
-        background: "rgba(18, 184, 134, 0.12)",
+        color: "#2ec4b6",
+        background: "rgba(46, 196, 182, 0.16)",
         boxShadow: "none",
       };
     default:
       return {
-        color: "#0f1a3a",
-        background: "rgba(15, 26, 58, 0.06)",
+        color: "#cbd5e1",
+        background: "rgba(255, 255, 255, 0.08)",
         boxShadow: "none",
       };
   }
