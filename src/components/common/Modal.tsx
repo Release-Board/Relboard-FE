@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { createPortal } from "react-dom";
 
 const Overlay = styled.div`
   position: fixed;
@@ -79,6 +80,12 @@ export default function Modal({
   actionsAlign = "end",
   children,
 }: Props) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -90,9 +97,9 @@ export default function Modal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  const modal = (
     <Overlay
       role="dialog"
       aria-modal="true"
@@ -111,4 +118,6 @@ export default function Modal({
       </Card>
     </Overlay>
   );
+
+  return createPortal(modal, document.body);
 }
