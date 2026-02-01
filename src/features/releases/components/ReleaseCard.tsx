@@ -99,6 +99,20 @@ const Summary = styled.p`
   color: ${({ theme }) => theme.colors.muted};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   line-height: 1.5;
+  font-style: italic;
+  position: relative;
+  padding-left: 10px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 2px;
+    bottom: 2px;
+    width: 2px;
+    border-radius: 2px;
+    background: ${({ theme }) => theme.colors.borderHover};
+  }
 `;
 
 const Meta = styled.div`
@@ -161,6 +175,80 @@ const MarkdownPanel = styled.div`
   background: ${({ theme }) => theme.colors.surfaceRaised};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.md};
+`;
+
+const InsightTabs = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+`;
+
+const InsightTabButton = styled.button<{ $active: boolean }>`
+  padding: 6px 14px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.surfaceRaised : theme.colors.surface};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.text : theme.colors.muted};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 160ms ease;
+`;
+
+const InsightBlock = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+const InsightTitle = styled.h5`
+  margin: 0;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const InsightList = styled.ul`
+  margin: 0;
+  padding-left: 18px;
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  display: grid;
+  gap: 8px;
+`;
+
+const MigrationCard = styled.div`
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: 1px solid ${({ theme }) => theme.colors.badgeBreakingBg};
+  background: rgba(220, 38, 38, 0.05);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+`;
+
+const CodeBlock = styled.pre`
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  overflow: auto;
+`;
+
+const KeywordChips = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const KeywordChip = styled.span`
+  padding: 4px 10px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  background: ${({ theme }) => theme.colors.tagBg};
+  color: ${({ theme }) => theme.colors.tagText};
 `;
 
 const FileTabs = styled.div`
@@ -231,13 +319,15 @@ export default function ReleaseCard({ release }: Props) {
   const canTranslate = Boolean(release.contentKo);
   const viewTrackedRef = useRef(false);
   const { t, language } = useStableTranslation();
+  const [detailTab, setDetailTab] = useState<"INSIGHT" | "FULL">("INSIGHT");
 
   const summary = useMemo(() => {
+    if (release.shortSummary) return release.shortSummary;
     if (release.title) return release.title;
     const source = release.contentKo || release.content || "";
     const firstLine = source.split("\n").find((line) => line.trim().length > 0) ?? "";
     return firstLine;
-  }, [release.content, release.contentKo]);
+  }, [release.content, release.contentKo, release.shortSummary, release.title]);
 
   const trackViewOnce = () => {
     if (viewTrackedRef.current) return;
@@ -308,37 +398,108 @@ export default function ReleaseCard({ release }: Props) {
 
       {expanded && hasContent && (
         <MarkdownPanel>
-          <FileTabs>
-            {canTranslate ? (
-              <>
-                <FileTabButton
-                  type="button"
-                  $active={showKorean}
-                  onClick={() => setShowKorean(true)}
-                >
-                  {t("language.korean")}
-                </FileTabButton>
-                <FileTabButton
-                  type="button"
-                  $active={!showKorean}
-                  onClick={() => setShowKorean(false)}
-                >
-                  {t("language.english")}
-                </FileTabButton>
-              </>
-            ) : (
-              <FileTabButton type="button" $active>
-                {t("language.english")}
-              </FileTabButton>
-            )}
-          </FileTabs>
-          {showKorean && canTranslate && (
-            <TranslationNotice>{t("releaseCard.translationNotice")}</TranslationNotice>
+          <InsightTabs>
+            <InsightTabButton
+              type="button"
+              $active={detailTab === "INSIGHT"}
+              onClick={() => setDetailTab("INSIGHT")}
+            >
+              {t("insight.tab")}
+            </InsightTabButton>
+            <InsightTabButton
+              type="button"
+              $active={detailTab === "FULL"}
+              onClick={() => setDetailTab("FULL")}
+            >
+              {t("insight.fullNote")}
+            </InsightTabButton>
+          </InsightTabs>
+
+          {detailTab === "INSIGHT" && (
+            <InsightBlock>
+              {release.insights && release.insights.length > 0 && (
+                <>
+                  <InsightTitle>{t("insight.highlights")}</InsightTitle>
+                  <InsightList>
+                    {release.insights.map((insight, index) => (
+                      <li key={`${insight.title}-${index}`}>
+                        <strong>{insight.title}</strong> — {insight.reason}
+                      </li>
+                    ))}
+                  </InsightList>
+                </>
+              )}
+
+              {release.migrationGuide && (
+                <>
+                  <InsightTitle>{t("insight.migrationGuide")}</InsightTitle>
+                  <MigrationCard>
+                    {release.migrationGuide.description && (
+                      <span>{release.migrationGuide.description}</span>
+                    )}
+                    {release.migrationGuide.code?.before && (
+                      <CodeBlock>{release.migrationGuide.code.before}</CodeBlock>
+                    )}
+                    {release.migrationGuide.code?.after && (
+                      <CodeBlock>{release.migrationGuide.code.after}</CodeBlock>
+                    )}
+                    {release.migrationGuide.code?.snippet &&
+                      !release.migrationGuide.code.before &&
+                      !release.migrationGuide.code.after && (
+                        <CodeBlock>{release.migrationGuide.code.snippet}</CodeBlock>
+                      )}
+                  </MigrationCard>
+                </>
+              )}
+
+              {release.technicalKeywords && release.technicalKeywords.length > 0 && (
+                <>
+                  <InsightTitle>{t("insight.keywords")}</InsightTitle>
+                  <KeywordChips>
+                    {release.technicalKeywords.map((keyword) => (
+                      <KeywordChip key={keyword}>{keyword}</KeywordChip>
+                    ))}
+                  </KeywordChips>
+                </>
+              )}
+            </InsightBlock>
           )}
-          <Markdown
-            content={showKorean && canTranslate ? release.contentKo ?? "" : release.content}
-          />
-          <CommentsSection releaseId={release.id} />
+
+          {detailTab === "FULL" && (
+            <>
+              <FileTabs>
+                {canTranslate ? (
+                  <>
+                    <FileTabButton
+                      type="button"
+                      $active={showKorean}
+                      onClick={() => setShowKorean(true)}
+                    >
+                      {t("language.korean")}
+                    </FileTabButton>
+                    <FileTabButton
+                      type="button"
+                      $active={!showKorean}
+                      onClick={() => setShowKorean(false)}
+                    >
+                      {t("language.english")}
+                    </FileTabButton>
+                  </>
+                ) : (
+                  <FileTabButton type="button" $active>
+                    {t("language.english")}
+                  </FileTabButton>
+                )}
+              </FileTabs>
+              {showKorean && canTranslate && (
+                <TranslationNotice>{t("releaseCard.translationNotice")}</TranslationNotice>
+              )}
+              <Markdown
+                content={showKorean && canTranslate ? release.contentKo ?? "" : release.content}
+              />
+              <CommentsSection releaseId={release.id} />
+            </>
+          )}
         </MarkdownPanel>
       )}
     </Card>
