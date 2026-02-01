@@ -22,7 +22,7 @@ export type Page<T> = {
   size: number;
 };
 
-export type TagType = "BREAKING" | "SECURITY" | "FEATURE" | "FIX";
+export type TagType = "BREAKING" | "SECURITY" | "FEATURE" | "FIX" | "PERFORMANCE";
 
 export type Category = string;
 
@@ -33,6 +33,22 @@ export type ReleaseResponse = {
   title: string;
   content: string;
   contentKo?: string | null;
+  shortSummary?: string | null;
+  insights?: Array<{
+    title: string;
+    reason: string;
+    type?: TagType;
+  }> | null;
+  migrationGuide?: {
+    description?: string;
+    code?: {
+      language?: string;
+      snippet?: string;
+      before?: string;
+      after?: string;
+    };
+  } | null;
+  technicalKeywords?: string[] | null;
   sourceUrl: string;
   publishedAt: string;
   tags: TagType[];

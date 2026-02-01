@@ -32,6 +32,12 @@ export function getTagStyle(tag: TagType | "ALL") {
         background: "rgba(46, 196, 182, 0.16)",
         boxShadow: "none",
       };
+    case "PERFORMANCE":
+      return {
+        color: "#f59e0b",
+        background: "rgba(245, 158, 11, 0.18)",
+        boxShadow: "none",
+      };
     default:
       return {
         color: "#cbd5e1",

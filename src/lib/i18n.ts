@@ -171,6 +171,13 @@ const resources = {
       tag: {
         all: "전체",
       },
+      insight: {
+        tab: "인사이트",
+        fullNote: "전문",
+        highlights: "핵심 요약",
+        migrationGuide: "마이그레이션 가이드",
+        keywords: "관련 키워드",
+      },
       sidebar: {
         allCategories: "전체 카테고리",
         following: "팔로잉",
@@ -358,6 +365,13 @@ const resources = {
       },
       tag: {
         all: "All",
+      },
+      insight: {
+        tab: "Insight",
+        fullNote: "Full note",
+        highlights: "Key highlights",
+        migrationGuide: "Migration guide",
+        keywords: "Keywords",
       },
       sidebar: {
         allCategories: "All Categories",
