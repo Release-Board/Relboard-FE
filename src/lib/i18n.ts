@@ -177,6 +177,7 @@ const resources = {
         highlights: "핵심 요약",
         migrationGuide: "마이그레이션 가이드",
         keywords: "관련 키워드",
+        empty: "아직 인사이트가 준비되지 않았어요.",
       },
       sidebar: {
         allCategories: "전체 카테고리",
@@ -372,6 +373,7 @@ const resources = {
         highlights: "Key highlights",
         migrationGuide: "Migration guide",
         keywords: "Keywords",
+        empty: "Insights are not available yet.",
       },
       sidebar: {
         allCategories: "All Categories",

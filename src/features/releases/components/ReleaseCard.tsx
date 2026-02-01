@@ -251,6 +251,15 @@ const KeywordChip = styled.span`
   color: ${({ theme }) => theme.colors.tagText};
 `;
 
+const InsightEmpty = styled.div`
+  padding: 16px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
 const FileTabs = styled.div`
   position: absolute;
   top: -24px;
@@ -318,6 +327,7 @@ export default function ReleaseCard({ release }: Props) {
   const hasContent = Boolean(release.content || release.contentKo);
   const canTranslate = Boolean(release.contentKo);
   const viewTrackedRef = useRef(false);
+  const autoSwitchedRef = useRef(false);
   const { t, language } = useStableTranslation();
   const [detailTab, setDetailTab] = useState<"INSIGHT" | "FULL">("INSIGHT");
 
@@ -328,6 +338,16 @@ export default function ReleaseCard({ release }: Props) {
     const firstLine = source.split("\n").find((line) => line.trim().length > 0) ?? "";
     return firstLine;
   }, [release.content, release.contentKo, release.shortSummary, release.title]);
+
+  const hasInsightContent = useMemo(
+    () =>
+      Boolean(
+        (release.insights && release.insights.length > 0) ||
+          release.migrationGuide ||
+          (release.technicalKeywords && release.technicalKeywords.length > 0)
+      ),
+    [release.insights, release.migrationGuide, release.technicalKeywords]
+  );
 
   const trackViewOnce = () => {
     if (viewTrackedRef.current) return;
@@ -340,6 +360,17 @@ export default function ReleaseCard({ release }: Props) {
       trackViewOnce();
     }
   }, [expanded]);
+
+  useEffect(() => {
+    if (!expanded) {
+      autoSwitchedRef.current = false;
+      return;
+    }
+    if (!autoSwitchedRef.current && !hasInsightContent) {
+      setDetailTab("FULL");
+      autoSwitchedRef.current = true;
+    }
+  }, [expanded, hasInsightContent]);
 
   return (
     <Card>
@@ -417,6 +448,9 @@ export default function ReleaseCard({ release }: Props) {
 
           {detailTab === "INSIGHT" && (
             <InsightBlock>
+              {!hasInsightContent && (
+                <InsightEmpty>{t("insight.empty")}</InsightEmpty>
+              )}
               {release.insights && release.insights.length > 0 && (
                 <>
                   <InsightTitle>{t("insight.highlights")}</InsightTitle>
