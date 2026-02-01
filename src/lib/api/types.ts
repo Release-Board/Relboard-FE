@@ -38,6 +38,10 @@ export type ReleaseResponse = {
   tags: TagType[];
   viewCount?: number;
   bookmarkCount?: number;
+  // Trending 전용 필드
+  periodViewCount?: number;
+  periodBookmarkCount?: number;
+  score?: number;
 };
 
 export type CommentUser = {
