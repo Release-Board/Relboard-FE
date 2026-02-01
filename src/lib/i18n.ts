@@ -123,6 +123,8 @@ const resources = {
         emptyDaily: "오늘 핫한 릴리즈가 아직 없습니다.",
         viewCount: "조회 {{count}}",
         bookmarkCount: "북마크 {{count}}",
+        bookmarkLabel: "북마크",
+        viewsLabel: "조회",
       },
       release: {
         breaking: "Breaking",
@@ -309,6 +311,8 @@ const resources = {
         emptyDaily: "No trending releases today.",
         viewCount: "Views {{count}}",
         bookmarkCount: "Bookmarks {{count}}",
+        bookmarkLabel: "bookmark",
+        viewsLabel: "views",
       },
       release: {
         breaking: "Breaking",
