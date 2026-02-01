@@ -78,19 +78,25 @@ const ChipList = styled.div`
   padding: 0 8px;
 `;
 
-const Chip = styled(Link)`
+const Chip = styled(Link) <{ $active?: boolean }>`
   display: inline-flex;
   align-items: center;
   padding: 4px 12px;
   border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ theme }) => theme.colors.surfaceRaised};
-  color: ${({ theme }) => theme.colors.text};
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.accent : theme.colors.surfaceRaised};
+  color: ${({ theme, $active }) => ($active ? "#ffffff" : theme.colors.text)};
   font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: 500;
+  font-weight: 600;
   transition: all 160ms ease;
+  border: 1px solid
+    ${({ theme, $active }) => ($active ? theme.colors.accent : theme.colors.border)};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.borderHover};
+    background: ${({ theme, $active }) =>
+    $active ? theme.colors.accentStrong : theme.colors.borderHover};
+    border-color: ${({ theme, $active }) =>
+    $active ? theme.colors.accentStrong : theme.colors.borderHover};
   }
 `;
 
@@ -98,6 +104,7 @@ export default function TechStackSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeCategory = searchParams.get("category");
+  const keywordParam = searchParams.get("keyword") ?? "";
   const { user } = useAuthStore();
   const { t } = useStableTranslation();
 
@@ -156,11 +163,25 @@ export default function TechStackSidebar() {
           <Section>
             <Title>{t("sidebar.following")}</Title>
             <ChipList>
-              {subscriptions.map((techStack) => (
-                <Chip key={techStack.id} href={`/tech-stacks/${techStack.name}`}>
-                  {techStack.name}
-                </Chip>
-              ))}
+              {subscriptions.map((techStack) => {
+                const isActive =
+                  pathname === `/tech-stacks/${techStack.name}` ||
+                  (pathname === "/" && keywordParam === techStack.name);
+
+                return (
+                  <Chip
+                    key={techStack.id}
+                    href={
+                      pathname === "/"
+                        ? `/?keyword=${encodeURIComponent(techStack.name)}`
+                        : `/tech-stacks/${techStack.name}`
+                    }
+                    $active={isActive}
+                  >
+                    {techStack.name}
+                  </Chip>
+                );
+              })}
             </ChipList>
           </Section>
         </>
