@@ -11,6 +11,7 @@ import { Moon, Sun } from "lucide-react";
 import { useThemeStore } from "@/lib/store/themeStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
 import { trackEvent } from "@/lib/analytics/ga";
+import { useContactStore } from "@/lib/store/contactStore";
 
 const HeaderWrap = styled.header`
   height: 64px;
@@ -242,6 +243,7 @@ export default function Header({ menuButton }: HeaderProps) {
   const toggleLanguage = useLanguageStore((state) => state.toggle);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement | null>(null);
+  const openContact = useContactStore((state) => state.openModal);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchKeyword.trim().length >= 2) {
@@ -371,6 +373,9 @@ export default function Header({ menuButton }: HeaderProps) {
                 {profileOpen && (
                   <ProfileMenu>
                     <MenuLink href="/me/profile">{t("header.profileEdit")}</MenuLink>
+                    <MenuButton type="button" onClick={openContact}>
+                      {t("support.contactButton")}
+                    </MenuButton>
                     <MenuButton type="button" onClick={handleLogout}>
                       {t("header.logout")}
                     </MenuButton>

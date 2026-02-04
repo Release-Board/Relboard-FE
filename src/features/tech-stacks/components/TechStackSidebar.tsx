@@ -4,13 +4,23 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import styled from "styled-components";
+import { MessageCircle } from "lucide-react";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import { fetchTechStacks, fetchMySubscriptions } from "@/lib/api/relboard";
 import { useAuthStore } from "@/lib/store/authStore";
+import { useContactStore } from "@/lib/store/contactStore";
 
 const Container = styled.div`
+  display: flex;
+  flex-direction: column;
   padding: 24px 16px;
+  height: 100%;
+`;
+
+const Sections = styled.div`
+  display: grid;
+  gap: 20px;
 `;
 
 const Section = styled.div`
@@ -100,6 +110,29 @@ const Chip = styled(Link) <{ $active?: boolean }>`
   }
 `;
 
+const SupportSection = styled.div`
+  margin-top: auto;
+  padding-top: 16px;
+`;
+
+const SupportButton = styled.button`
+  width: 100%;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
+  padding: 10px 12px;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceRaised};
+  }
+`;
+
 export default function TechStackSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -107,6 +140,7 @@ export default function TechStackSidebar() {
   const keywordParam = searchParams.get("keyword") ?? "";
   const { user } = useAuthStore();
   const { t } = useStableTranslation();
+  const openContact = useContactStore((state) => state.openModal);
 
   const { data: techStacks } = useQuery({
     queryKey: ["tech-stacks"],
@@ -130,62 +164,70 @@ export default function TechStackSidebar() {
 
   return (
     <Container>
-      <Section>
-        <Title>{t("sidebar.allCategories")}</Title>
-        <List>
-          <li>
-            <NavLink href="/" $active={pathname === "/" && !activeCategory}>
-              <Row>
-                {t("sidebar.allCategories")}
-                <Count>{totalCount}</Count>
-              </Row>
-            </NavLink>
-          </li>
-          {categories.map(([category, count]) => (
-            <li key={category}>
-              <NavLink
-                href={`/?category=${encodeURIComponent(category)}`}
-                $active={pathname === "/" && activeCategory === category}
-              >
+      <Sections>
+        <Section>
+          <Title>{t("sidebar.allCategories")}</Title>
+          <List>
+            <li>
+              <NavLink href="/" $active={pathname === "/" && !activeCategory}>
                 <Row>
-                  {category}
-                  <Count>{count}</Count>
+                  {t("sidebar.allCategories")}
+                  <Count>{totalCount}</Count>
                 </Row>
               </NavLink>
             </li>
-          ))}
-        </List>
-      </Section>
+            {categories.map(([category, count]) => (
+              <li key={category}>
+                <NavLink
+                  href={`/?category=${encodeURIComponent(category)}`}
+                  $active={pathname === "/" && activeCategory === category}
+                >
+                  <Row>
+                    {category}
+                    <Count>{count}</Count>
+                  </Row>
+                </NavLink>
+              </li>
+            ))}
+          </List>
+        </Section>
 
-      {user && subscriptions && subscriptions.length > 0 && (
-        <>
-          <Divider />
-          <Section>
-            <Title>{t("sidebar.following")}</Title>
-            <ChipList>
-              {subscriptions.map((techStack) => {
-                const isActive =
-                  pathname === `/tech-stacks/${techStack.name}` ||
-                  (pathname === "/" && keywordParam === techStack.name);
+        {user && subscriptions && subscriptions.length > 0 && (
+          <>
+            <Divider />
+            <Section>
+              <Title>{t("sidebar.following")}</Title>
+              <ChipList>
+                {subscriptions.map((techStack) => {
+                  const isActive =
+                    pathname === `/tech-stacks/${techStack.name}` ||
+                    (pathname === "/" && keywordParam === techStack.name);
 
-                return (
-                  <Chip
-                    key={techStack.id}
-                    href={
-                      pathname === "/"
-                        ? `/?keyword=${encodeURIComponent(techStack.name)}`
-                        : `/tech-stacks/${techStack.name}`
-                    }
-                    $active={isActive}
-                  >
-                    {techStack.name}
-                  </Chip>
-                );
-              })}
-            </ChipList>
-          </Section>
-        </>
-      )}
+                  return (
+                    <Chip
+                      key={techStack.id}
+                      href={
+                        pathname === "/"
+                          ? `/?keyword=${encodeURIComponent(techStack.name)}`
+                          : `/tech-stacks/${techStack.name}`
+                      }
+                      $active={isActive}
+                    >
+                      {techStack.name}
+                    </Chip>
+                  );
+                })}
+              </ChipList>
+            </Section>
+          </>
+        )}
+      </Sections>
+      <SupportSection>
+        <SupportButton type="button" onClick={openContact}>
+          <MessageCircle size={16} />
+          {t("support.contactButton")}
+        </SupportButton>
+      </SupportSection>
     </Container>
   );
 }

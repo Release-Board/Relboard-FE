@@ -376,3 +376,26 @@ export async function deleteProfileImage() {
 
   return response.data;
 }
+
+export type SupportFeedbackPayload = {
+  category: "SUGGESTION" | "TECH_STACK_REQUEST" | "BUG_REPORT";
+  content: string;
+  email?: string;
+  userId?: number;
+};
+
+export async function submitSupportFeedback(payload: SupportFeedbackPayload) {
+  const response = await fetchJson<CommonApiResponse<{ submitted: boolean }>>(
+    "/api/v1/support/feedback",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to submit feedback");
+  }
+
+  return response.data;
+}
