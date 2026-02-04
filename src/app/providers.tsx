@@ -13,6 +13,8 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { useThemeStore } from "@/lib/store/themeStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
 import i18n from "@/lib/i18n";
+import { initGA, trackPageView } from "@/lib/analytics/ga";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function Providers({
   children,
@@ -35,6 +37,8 @@ export default function Providers({
   const themeMode = useThemeStore((state) => state.mode);
   const initializeTheme = useThemeStore((state) => state.initialize);
   const initializeLanguage = useLanguageStore((state) => state.initialize);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     let active = true;
@@ -70,6 +74,16 @@ export default function Providers({
   useEffect(() => {
     initializeLanguage();
   }, [initializeLanguage]);
+
+  useEffect(() => {
+    initGA();
+  }, []);
+
+  useEffect(() => {
+    if (!pathname) return;
+    const query = searchParams?.toString();
+    trackPageView(query ? `${pathname}?${query}` : pathname);
+  }, [pathname, searchParams]);
 
   return (
     <StyledComponentsRegistry>
