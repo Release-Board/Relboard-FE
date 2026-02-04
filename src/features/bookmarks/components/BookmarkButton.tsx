@@ -8,6 +8,7 @@ import type { ReleaseResponse } from "@/lib/api/types";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useBookmarks } from "@/features/bookmarks/hooks/useBookmarks";
 import { useToast } from "@/lib/hooks/useToast";
+import { trackEvent } from "@/lib/analytics/ga";
 
 const Button = styled.button<{ $active: boolean }>`
   display: inline-flex;
@@ -74,7 +75,14 @@ export default function BookmarkButton({ release }: Props) {
       });
     } else {
       addBookmark.mutate(release, {
-        onSuccess: () => toast(t("toast.bookmarkAdded"), { tone: "success" }),
+        onSuccess: () => {
+          trackEvent("bookmark_click", {
+            release_id: release.id,
+            version: release.version,
+            stack_name: release.techStack.name,
+          });
+          toast(t("toast.bookmarkAdded"), { tone: "success" });
+        },
         onError: () => toast(t("toast.bookmarkAddFail"), { tone: "error" }),
       });
     }

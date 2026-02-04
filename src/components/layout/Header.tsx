@@ -10,6 +10,7 @@ import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import { Moon, Sun } from "lucide-react";
 import { useThemeStore } from "@/lib/store/themeStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
+import { trackEvent } from "@/lib/analytics/ga";
 
 const HeaderWrap = styled.header`
   height: 64px;
@@ -244,6 +245,7 @@ export default function Header({ menuButton }: HeaderProps) {
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchKeyword.trim().length >= 2) {
+      trackEvent("internal_search", { search_term: searchKeyword.trim() });
       router.push(`/?keyword=${encodeURIComponent(searchKeyword.trim())}`);
     }
   };
@@ -334,7 +336,11 @@ export default function Header({ menuButton }: HeaderProps) {
           <LangButton
             type="button"
             aria-label={t("header.languageToggle")}
-            onClick={toggleLanguage}
+            onClick={() => {
+              const next = language === "ko" ? "en" : "ko";
+              trackEvent("language_toggle", { selected_lang: next });
+              toggleLanguage();
+            }}
             title={t("header.languageToggle")}
           >
             {language === "ko" ? "KR" : "EN"}

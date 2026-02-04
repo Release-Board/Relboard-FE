@@ -319,9 +319,10 @@ function formatDate(value: string, locale: string) {
 
 type Props = {
   release: ReleaseResponse;
+  onOpen?: () => void;
 };
 
-export default function ReleaseCard({ release }: Props) {
+export default function ReleaseCard({ release, onOpen }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [showKorean, setShowKorean] = useState(Boolean(release.contentKo));
   const hasContent = Boolean(release.content || release.contentKo);
@@ -355,6 +356,14 @@ export default function ReleaseCard({ release }: Props) {
     trackReleaseView(release.id);
   };
 
+  const openDetails = () => {
+    if (!hasContent) return;
+    if (!expanded) {
+      onOpen?.();
+    }
+    setExpanded(true);
+  };
+
   useEffect(() => {
     if (expanded) {
       trackViewOnce();
@@ -383,9 +392,7 @@ export default function ReleaseCard({ release }: Props) {
             type="button"
             onClick={() => {
               trackViewOnce();
-              if (hasContent) {
-                setExpanded(true);
-              }
+              openDetails();
             }}
           >
             {release.techStack.name}
@@ -422,7 +429,16 @@ export default function ReleaseCard({ release }: Props) {
       </Tags>
 
       {hasContent && (
-        <ExpandButton type="button" onClick={() => setExpanded((prev) => !prev)}>
+        <ExpandButton
+          type="button"
+          onClick={() => {
+            if (expanded) {
+              setExpanded(false);
+              return;
+            }
+            openDetails();
+          }}
+        >
           {expanded ? t("common.collapse") : t("common.viewDetails")}
         </ExpandButton>
       )}

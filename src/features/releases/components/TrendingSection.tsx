@@ -9,6 +9,7 @@ import { TrendingUp } from "lucide-react";
 
 import { fetchTrendingReleases } from "@/lib/api/relboard";
 import type { ReleaseResponse } from "@/lib/api/types";
+import { trackEvent } from "@/lib/analytics/ga";
 
 const Section = styled.section`
   display: grid;
@@ -348,7 +349,16 @@ export default function TrendingSection() {
       {!isLoading && !isError && data && data.length > 0 && (
         <List>
           {data.map((release, index) => (
-            <RankItem key={release.id} href={`/tech-stacks/${release.techStack.name}`}>
+            <RankItem
+              key={release.id}
+              href={`/tech-stacks/${release.techStack.name}`}
+              onClick={() =>
+                trackEvent("trending_item_click", {
+                  rank_position: index + 1,
+                  stack_name: release.techStack.name,
+                })
+              }
+            >
               <RankNumber>{index + 1}</RankNumber>
               <RankChange $change="same">-</RankChange>
               <IconBox $color={release.techStack.colorHex ?? undefined}>

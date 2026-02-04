@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
+import { trackEvent } from "@/lib/analytics/ga";
 
 import type { TechStackResponse } from "@/lib/api/types";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -105,6 +106,11 @@ export default function SubscribeButton({ techStack }: Props) {
       setConfirmOpen(true);
       return;
     }
+    trackEvent("subscribe_click", {
+      stack_id: techStack.id,
+      stack_name: techStack.name,
+      category: techStack.category,
+    });
     subscribe.mutate(techStack);
   };
 
