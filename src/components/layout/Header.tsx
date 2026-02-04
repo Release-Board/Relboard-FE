@@ -51,6 +51,10 @@ const Nav = styled.nav`
   display: flex;
   align-items: center;
   gap: 16px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const NavLink = styled(Link) <{ $active?: boolean }>`
@@ -75,6 +79,10 @@ const SearchWrap = styled.div`
   padding: 6px 12px;
   min-width: 240px;
   gap: 8px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const SearchIcon = styled.span`
@@ -90,6 +98,10 @@ const SearchInput = styled.input`
   color: ${({ theme }) => theme.colors.text};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   width: 100%;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const Dot = styled.span`
@@ -138,6 +150,49 @@ const Button = styled.button`
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceRaised};
   }
+`;
+
+const MobileSearchButton = styled.button`
+  display: none;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.muted};
+  cursor: pointer;
+
+  @media (max-width: 768px) {
+    display: inline-flex;
+  }
+`;
+
+const MobileSearchPanel = styled.div<{ $open: boolean }>`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: ${({ $open }) => ($open ? "block" : "none")};
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    background: ${({ theme }) => theme.colors.background};
+    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+    z-index: 120;
+  }
+`;
+
+const MobileSearchInput = styled.input`
+  width: 100%;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.text};
+  background: ${({ theme }) => theme.colors.surface};
 `;
 
 const ProfileMenuWrap = styled.div`
@@ -199,6 +254,63 @@ const ProfileMenu = styled.div`
   z-index: 200;
 `;
 
+const MobileMenuOverlay = styled.div<{ $open: boolean }>`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: ${({ $open }) => ($open ? "block" : "none")};
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 119;
+  }
+`;
+
+const MobileMenuDrawer = styled.div<{ $open: boolean }>`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: ${({ $open }) => ($open ? "flex" : "none")};
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: ${({ theme }) => theme.colors.background};
+    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+    padding: 16px;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 120;
+  }
+`;
+
+const MobileMenuLink = styled(Link)`
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceRaised};
+  }
+`;
+
+const MobileMenuButton = styled.button`
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.text};
+  text-align: left;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceRaised};
+  }
+`;
+
 const MenuLink = styled(Link)`
   padding: 8px 10px;
   border-radius: 8px;
@@ -228,9 +340,11 @@ const MenuButton = styled.button`
 
 type HeaderProps = {
   menuButton?: React.ReactNode;
+  mobileMenuOpen?: boolean;
+  onMobileMenuClose?: () => void;
 };
 
-export default function Header({ menuButton }: HeaderProps) {
+export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }: HeaderProps) {
   const { user, isInitialized } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -242,6 +356,7 @@ export default function Header({ menuButton }: HeaderProps) {
   const language = useLanguageStore((state) => state.language);
   const toggleLanguage = useLanguageStore((state) => state.toggle);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement | null>(null);
   const openContact = useContactStore((state) => state.openModal);
 
@@ -249,6 +364,8 @@ export default function Header({ menuButton }: HeaderProps) {
     if (e.key === "Enter" && searchKeyword.trim().length >= 2) {
       trackEvent("internal_search", { search_term: searchKeyword.trim() });
       router.push(`/?keyword=${encodeURIComponent(searchKeyword.trim())}`);
+      setMobileSearchOpen(false);
+      onMobileMenuClose?.();
     }
   };
 
@@ -297,6 +414,9 @@ export default function Header({ menuButton }: HeaderProps) {
           <Logo href="/">Relboard</Logo>
           <Nav>
             <NavLink href="/" $active={pathname === "/"}>{t("header.overview")}</NavLink>
+            <NavLink href="/about" $active={pathname === "/about"}>
+              {t("header.about")}
+            </NavLink>
             <NavLink href="/me/subscriptions" $active={pathname === "/me/subscriptions"}>
               {t("header.following")}
             </NavLink>
@@ -323,6 +443,16 @@ export default function Header({ menuButton }: HeaderProps) {
               onKeyDown={handleSearch}
             />
           </SearchWrap>
+          <MobileSearchButton
+            type="button"
+            aria-label={t("header.searchPlaceholder")}
+            onClick={() => setMobileSearchOpen((prev) => !prev)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+          </MobileSearchButton>
           <IconButton
             type="button"
             aria-label={t("header.themeToggle")}
@@ -390,6 +520,42 @@ export default function Header({ menuButton }: HeaderProps) {
           )}
         </Actions>
       </HeaderInner>
+      <MobileSearchPanel $open={mobileSearchOpen}>
+        <MobileSearchInput
+          placeholder={t("header.searchPlaceholder")}
+          value={searchKeyword}
+          onChange={(event) => setSearchKeyword(event.target.value)}
+          onKeyDown={handleSearch}
+          autoFocus
+        />
+      </MobileSearchPanel>
+      <MobileMenuOverlay $open={Boolean(mobileMenuOpen)} onClick={onMobileMenuClose} />
+      <MobileMenuDrawer $open={Boolean(mobileMenuOpen)}>
+        <MobileMenuLink href="/" onClick={onMobileMenuClose}>
+          {t("header.overview")}
+        </MobileMenuLink>
+        <MobileMenuLink href="/me/subscriptions" onClick={onMobileMenuClose}>
+          {t("header.following")}
+        </MobileMenuLink>
+        <MobileMenuLink href="/me/bookmarks" onClick={onMobileMenuClose}>
+          {t("header.bookmarks")}
+        </MobileMenuLink>
+        <MobileMenuLink href="/trending" onClick={onMobileMenuClose}>
+          {t("header.trending")}
+        </MobileMenuLink>
+        <MobileMenuLink href="/about" onClick={onMobileMenuClose}>
+          {t("header.about")}
+        </MobileMenuLink>
+        <MobileMenuButton
+          type="button"
+          onClick={() => {
+            onMobileMenuClose?.();
+            openContact();
+          }}
+        >
+          {t("support.contactButton")}
+        </MobileMenuButton>
+      </MobileMenuDrawer>
     </HeaderWrap>
   );
 }

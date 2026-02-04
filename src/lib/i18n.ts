@@ -24,6 +24,7 @@ const resources = {
       },
       header: {
         overview: "개요",
+        about: "소개",
         following: "팔로잉",
         trending: "인기 릴리즈",
         bookmarks: "북마크",
@@ -239,6 +240,7 @@ const resources = {
       },
       header: {
         overview: "Overview",
+        about: "About",
         following: "Following",
         trending: "Trending",
         bookmarks: "Bookmarks",

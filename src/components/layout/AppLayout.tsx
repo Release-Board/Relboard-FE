@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import TechStackSidebar from "@/features/tech-stacks/components/TechStackSidebar";
@@ -126,14 +126,43 @@ const MenuButton = styled.button`
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isInitialized = useAuthStore((state) => state.isInitialized);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { t } = useStableTranslation();
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINTS.mobile})`);
+    const handleChange = (matches: boolean) => {
+      setIsMobile(matches);
+      if (matches) {
+        setSidebarOpen(false);
+      } else {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    handleChange(mediaQuery.matches);
+    const listener = (event: MediaQueryListEvent) => handleChange(event.matches);
+    mediaQuery.addEventListener("change", listener);
+    return () => mediaQuery.removeEventListener("change", listener);
+  }, []);
+
+  const handleMenuClick = () => {
+    if (isMobile) {
+      setMobileMenuOpen((prev) => !prev);
+      return;
+    }
+    setSidebarOpen((prev) => !prev);
+  };
 
   return (
     <LayoutWrap>
       <HeaderWrap>
         <Header
+          mobileMenuOpen={mobileMenuOpen}
+          onMobileMenuClose={() => setMobileMenuOpen(false)}
           menuButton={
-            <MenuButton onClick={() => setSidebarOpen(!sidebarOpen)} aria-label={t("menu.open")}>
+            <MenuButton onClick={handleMenuClick} aria-label={t("menu.open")}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 12h18M3 6h18M3 18h18" />
               </svg>
