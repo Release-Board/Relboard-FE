@@ -88,7 +88,9 @@ const CATEGORY_OPTIONS = [
   { value: "SUGGESTION", labelKey: "support.categorySuggestion" },
   { value: "TECH_STACK_REQUEST", labelKey: "support.categoryTechStack" },
   { value: "BUG_REPORT", labelKey: "support.categoryBug" },
-];
+] as const;
+
+type CategoryOption = (typeof CATEGORY_OPTIONS)[number]["value"];
 
 export default function ContactModal() {
   const { open, closeModal } = useContactStore();
@@ -96,7 +98,7 @@ export default function ContactModal() {
   const { t } = useStableTranslation();
   const toast = useToast();
 
-  const [category, setCategory] = useState(CATEGORY_OPTIONS[0].value);
+  const [category, setCategory] = useState<CategoryOption>(CATEGORY_OPTIONS[0].value);
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -151,7 +153,10 @@ export default function ContactModal() {
       <Form onSubmit={handleSubmit}>
         <Field>
           {t("support.category")}
-          <Select value={category} onChange={(event) => setCategory(event.target.value)}>
+          <Select
+            value={category}
+            onChange={(event) => setCategory(event.target.value as CategoryOption)}
+          >
             {CATEGORY_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {t(option.labelKey)}
