@@ -217,6 +217,7 @@ const ProfileButton = styled.button`
   }
 `;
 
+
 const Avatar = styled.img`
   width: 28px;
   height: 28px;
@@ -323,7 +324,7 @@ const MenuLink = styled(Link)`
   }
 `;
 
-const MenuButton = styled.button`
+const MenuButton = styled.button<{ $muted?: boolean }>`
   padding: 8px 10px;
   border-radius: 8px;
   border: none;
@@ -332,9 +333,12 @@ const MenuButton = styled.button`
   text-align: left;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   cursor: pointer;
+  opacity: ${({ $muted }) => ($muted ? 0.7 : 1)};
+  cursor: ${({ $muted }) => ($muted ? "default" : "pointer")};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceRaised};
+    background: ${({ theme, $muted }) =>
+      $muted ? "transparent" : theme.colors.surfaceRaised};
   }
 `;
 
@@ -495,13 +499,13 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
                       {user.nickname?.trim().slice(0, 1) || "U"}
                     </AvatarFallback>
                   )}
-                  <span>
-                    {user.nickname}
-                    {t("header.profileSuffix")}
-                  </span>
                 </ProfileButton>
                 {profileOpen && (
                   <ProfileMenu>
+                    <MenuButton type="button" $muted>
+                      {user.nickname}
+                      {t("header.profileSuffix")}
+                    </MenuButton>
                     <MenuLink href="/me/profile">{t("header.profileEdit")}</MenuLink>
                     <MenuButton type="button" onClick={openContact}>
                       {t("support.contactButton")}
