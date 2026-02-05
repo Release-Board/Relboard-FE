@@ -5,6 +5,12 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
   }
 
+  html, body {
+    height: 100%;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
+  }
+
   body {
     margin: 0;
     padding: 0;
@@ -12,6 +18,10 @@ const GlobalStyle = createGlobalStyle`
     background: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
     font-family: ${({ theme }) => theme.fonts.body};
+    overflow-x: hidden;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: auto;
   }
 
   a {
