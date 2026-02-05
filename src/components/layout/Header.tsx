@@ -140,10 +140,6 @@ const IconButton = styled.button`
   justify-content: center;
   color: ${({ theme }) => theme.colors.muted};
   cursor: pointer;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
 `;
 
 const LangButton = styled.button`
@@ -158,10 +154,6 @@ const LangButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.muted};
   cursor: pointer;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
 `;
 
 const Button = styled.button`
@@ -328,6 +320,12 @@ const MobileMenuDivider = styled.div`
   margin: 6px 0;
 `;
 
+const MobileMenuFooter = styled.div`
+  margin-top: auto;
+  display: grid;
+  gap: 8px;
+`;
+
 const MobileMenuLink = styled(Link) <{ $active?: boolean }>`
   padding: 10px 12px;
   border-radius: 10px;
@@ -414,6 +412,7 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement | null>(null);
   const profileButtonRef = useRef<HTMLButtonElement | null>(null);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const [profileMenuPos, setProfileMenuPos] = useState<{ top: number; right: number } | null>(null);
   const openContact = useContactStore((state) => state.openModal);
 
@@ -440,8 +439,10 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (!profileRef.current) return;
-      if (event.target instanceof Node && !profileRef.current.contains(event.target)) {
+      if (!(event.target instanceof Node)) return;
+      const isInButton = profileRef.current?.contains(event.target);
+      const isInMenu = profileMenuRef.current?.contains(event.target);
+      if (!isInButton && !isInMenu) {
         setProfileOpen(false);
       }
     };
@@ -490,9 +491,6 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
           <Logo href="/">Relboard</Logo>
           <Nav>
             <NavLink href="/" $active={pathname === "/"}>{t("header.overview")}</NavLink>
-            <NavLink href="/about" $active={pathname === "/about"}>
-              {t("header.about")}
-            </NavLink>
             <NavLink href="/me/subscriptions" $active={pathname === "/me/subscriptions"}>
               {t("header.following")}
             </NavLink>
@@ -501,6 +499,9 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
             </NavLink>
             <NavLink href="/me/bookmarks" $active={pathname === "/me/bookmarks"}>
               {t("header.bookmarks")}
+            </NavLink>
+            <NavLink href="/about" $active={pathname === "/about"}>
+              {t("header.about")}
             </NavLink>
           </Nav>
         </Left>
@@ -569,16 +570,33 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
               </ProfileMenuWrap>
               {profileOpen && mounted && profileMenuPos &&
                 createPortal(
-                  <ProfileMenu style={{ top: profileMenuPos.top, right: profileMenuPos.right }}>
+                  <ProfileMenu
+                    ref={profileMenuRef}
+                    style={{ top: profileMenuPos.top, right: profileMenuPos.right }}
+                  >
                     <MenuButton type="button" $muted>
                       {user.nickname}
                       {t("header.profileSuffix")}
                     </MenuButton>
-                    <MenuLink href="/me/profile">{t("header.profileEdit")}</MenuLink>
-                    <MenuButton type="button" onClick={openContact}>
+                    <MenuLink href="/me/profile" onClick={() => setProfileOpen(false)}>
+                      {t("header.profileEdit")}
+                    </MenuLink>
+                    <MenuButton
+                      type="button"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        openContact();
+                      }}
+                    >
                       {t("support.contactButton")}
                     </MenuButton>
-                    <MenuButton type="button" onClick={handleLogout}>
+                    <MenuButton
+                      type="button"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        handleLogout();
+                      }}
+                    >
                       {t("header.logout")}
                     </MenuButton>
                   </ProfileMenu>,
@@ -665,8 +683,11 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
             onClick={onMobileMenuClose}
           >
             <Info size={16} />
-          {t("header.about")}
+            {t("header.about")}
           </MobileMenuLink>
+        </MobileMenuSection>
+        <MobileMenuDivider />
+        <MobileMenuFooter>
           <MobileMenuButton
             type="button"
             onClick={() => {
@@ -675,36 +696,9 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
             }}
           >
             <MessageCircle size={16} />
-          {t("support.contactButton")}
+            {t("support.contactButton")}
           </MobileMenuButton>
-        </MobileMenuSection>
-        <MobileMenuDivider />
-        <MobileMenuSection>
-          <MobileMenuButton
-            type="button"
-            onClick={() => {
-              toggleTheme();
-            }}
-          >
-            {themeMode === "dark" ? <Moon size={16} /> : <Sun size={16} />}
-            {t("header.themeToggle")}
-          </MobileMenuButton>
-          <MobileMenuButton
-            type="button"
-            onClick={() => {
-              const next = language === "ko" ? "en" : "ko";
-              trackEvent("language_toggle", { selected_lang: next });
-              toggleLanguage();
-            }}
-          >
-            <Languages size={16} />
-            {t("header.languageToggle")}
-          </MobileMenuButton>
-          <MobileMenuButton type="button">
-            <Bell size={16} />
-            {t("header.notifications")}
-          </MobileMenuButton>
-        </MobileMenuSection>
+        </MobileMenuFooter>
       </MobileMenuDrawer>
     </HeaderWrap>
   );
