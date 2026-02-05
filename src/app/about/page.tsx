@@ -16,10 +16,12 @@ const fadeUp = keyframes`
 `;
 
 const Page = styled.div`
-  background: #050505;
-  color: #e5e7eb;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
   min-height: calc(100vh - 64px);
   padding: 64px 0 120px;
+  position: relative;
+  overflow: hidden;
 `;
 
 const Container = styled.div`
@@ -46,20 +48,61 @@ const Section = styled.section<{ $delay?: string }>`
 const Hero = styled(Section)`
   position: relative;
   padding: 40px 0;
-  gap: 24px;
+  gap: 32px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: center;
 `;
 
 const Glow = styled.div`
   position: absolute;
-  inset: -10% 20% 20% 20%;
+  inset: -15% 10% 15% 10%;
   background: radial-gradient(
     circle,
-    rgba(16, 185, 129, 0.2) 0%,
-    rgba(16, 185, 129, 0.08) 35%,
-    rgba(5, 5, 5, 0) 70%
+    rgba(16, 185, 129, 0.24) 0%,
+    rgba(16, 185, 129, 0.1) 35%,
+    rgba(16, 185, 129, 0) 70%
   );
   filter: blur(10px);
   z-index: 0;
+  opacity: ${({ theme }) => (theme.mode === "dark" ? 1 : 0.45)};
+`;
+
+const GridBackdrop = styled.div`
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: ${({ theme }) => (theme.mode === "dark" ? 0.25 : 0.18)};
+  pointer-events: none;
+`;
+
+const HeroContent = styled.div`
+  grid-column: span 7;
+  display: grid;
+  gap: 18px;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 900px) {
+    grid-column: span 12;
+  }
+`;
+
+const HeroVisual = styled.div`
+  grid-column: span 5;
+  display: grid;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 900px) {
+    grid-column: span 12;
+  }
 `;
 
 const Title = styled.h1`
@@ -77,7 +120,7 @@ const Title = styled.h1`
 
 const Subtitle = styled.p`
   font-size: 18px;
-  color: #9ca3af;
+  color: ${({ theme }) => theme.colors.muted};
   max-width: 620px;
   margin: 0;
   position: relative;
@@ -89,20 +132,35 @@ const Subtitle = styled.p`
 `;
 
 const Highlight = styled.span`
-  color: #10b981;
+  color: ${({ theme }) => theme.colors.accentStrong};
 `;
 
 const SectionTitle = styled.h2`
   font-size: 20px;
   margin: 0;
-  color: #f9fafb;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Text = styled.p`
   font-size: 16px;
-  color: #9ca3af;
+  color: ${({ theme }) => theme.colors.muted};
   margin: 0;
   line-height: 1.6;
+`;
+
+const ChipRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const Chip = styled.span`
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.surfaceRaised};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const CardGrid = styled.div`
@@ -116,24 +174,25 @@ const CardGrid = styled.div`
 `;
 
 const MiniCard = styled.div`
-  border: 1px solid #1f2937;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 16px;
-  background: #0a0a0a;
+  background: ${({ theme }) => theme.colors.surface};
   padding: 16px;
   display: grid;
   gap: 10px;
+  box-shadow: ${({ theme }) => theme.shadows.soft};
 `;
 
 const CardTitle = styled.h3`
   margin: 0;
   font-size: 16px;
-  color: #e5e7eb;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const CardText = styled.p`
   margin: 0;
   font-size: 14px;
-  color: #9ca3af;
+  color: ${({ theme }) => theme.colors.muted};
   line-height: 1.5;
 `;
 
@@ -147,11 +206,45 @@ const CtaButton = styled(Link)`
   justify-content: center;
   padding: 12px 18px;
   border-radius: 999px;
-  background: #10b981;
-  color: #0a0a0a;
+  background: ${({ theme }) => theme.colors.accentStrong};
+  color: #ffffff;
   font-weight: 600;
   text-decoration: none;
   font-size: 14px;
+`;
+
+const VisualCard = styled.div`
+  border-radius: 18px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+  box-shadow: ${({ theme }) => theme.shadows.soft};
+`;
+
+const VisualTitle = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 600;
+`;
+
+const VisualRow = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
+
+const VisualDot = styled.span<{ $color?: string }>`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${({ $color, theme }) => $color ?? theme.colors.accent};
+`;
+
+const VisualText = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.muted};
 `;
 
 export default function AboutPage() {
@@ -159,15 +252,47 @@ export default function AboutPage() {
 
   return (
     <Page>
+      <GridBackdrop aria-hidden="true" />
       <Container>
         <Hero $delay="0.05s">
           <Glow aria-hidden="true" />
-          <Title>
-            {t("about.heroTitle")}
-            <br />
-            <Highlight>{t("about.heroHighlight")}</Highlight>
-          </Title>
-          <Subtitle>{t("about.heroSubtitle")}</Subtitle>
+          <HeroContent>
+            <Title>
+              {t("about.heroTitle")}
+              <br />
+              <Highlight>{t("about.heroHighlight")}</Highlight>
+            </Title>
+            <Subtitle>{t("about.heroSubtitle")}</Subtitle>
+            <ChipRow>
+              <Chip>AI Translation</Chip>
+              <Chip>Personalized Feed</Chip>
+              <Chip>Trending Signals</Chip>
+            </ChipRow>
+          </HeroContent>
+          <HeroVisual>
+            <VisualCard>
+              <VisualTitle>Release signal</VisualTitle>
+              <VisualRow>
+                <VisualDot $color="#10b981" />
+                <VisualText>Breaking updates · Faster triage</VisualText>
+              </VisualRow>
+              <VisualRow>
+                <VisualDot />
+                <VisualText>Highlights ready in Korean</VisualText>
+              </VisualRow>
+            </VisualCard>
+            <VisualCard>
+              <VisualTitle>Focused tracking</VisualTitle>
+              <VisualRow>
+                <VisualDot $color="#f59e0b" />
+                <VisualText>Follow only what matters</VisualText>
+              </VisualRow>
+              <VisualRow>
+                <VisualDot $color="#3b82f6" />
+                <VisualText>Organized by stack & version</VisualText>
+              </VisualRow>
+            </VisualCard>
+          </HeroVisual>
         </Hero>
 
         <Section $delay="0.15s">
