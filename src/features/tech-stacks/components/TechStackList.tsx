@@ -1,19 +1,28 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import styled from "styled-components";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchTechStacks } from "@/lib/api/relboard";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
 import type { TechStackResponse } from "@/lib/api/types";
+import SearchBar from "@/features/releases/components/SearchBar";
 
 const Section = styled.section`
   display: grid;
   gap: 16px;
+`;
+
+const MobileSearch = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
 `;
 
 const List = styled.div`
@@ -115,6 +124,8 @@ function filterStacks(
 
 export default function TechStackList() {
   const { t, language } = useStableTranslation();
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   const keywordParam = searchParams.get("keyword") ?? "";
@@ -127,6 +138,21 @@ export default function TechStackList() {
   const stacks = useMemo(
     () => filterStacks(data ?? [], categoryParam, keywordParam),
     [data, categoryParam, keywordParam]
+  );
+
+  const handleKeywordChange = useCallback(
+    (value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      const normalized = value.trim();
+      if (normalized) {
+        params.set("keyword", normalized);
+      } else {
+        params.delete("keyword");
+      }
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname);
+    },
+    [pathname, router, searchParams]
   );
 
   if (isLoading) {
@@ -143,6 +169,9 @@ export default function TechStackList() {
 
   return (
     <Section>
+      <MobileSearch>
+        <SearchBar keyword={keywordParam} onChange={handleKeywordChange} />
+      </MobileSearch>
       <List>
         {stacks.map((stack) => (
           <Card key={stack.id}>
