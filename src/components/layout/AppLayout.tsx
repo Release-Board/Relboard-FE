@@ -8,8 +8,9 @@ import Header from "./Header";
 import { useAuthStore } from "@/lib/store/authStore";
 import ToastHost from "@/components/common/ToastHost";
 import ContactModal from "@/components/support/ContactModal";
-import { MessageCircle } from "lucide-react";
+import { ArrowLeft, MessageCircle } from "lucide-react";
 import { useContactStore } from "@/lib/store/contactStore";
+import { usePathname, useRouter } from "next/navigation";
 
 // Breakpoints
 const BREAKPOINTS = {
@@ -122,6 +123,25 @@ const Content = styled.div`
   }
 `;
 
+const BackRow = styled.div`
+  margin-bottom: 16px;
+`;
+
+const BackButton = styled.button`
+  border: none;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
 const FloatingSupportButton = styled.button`
   position: fixed;
   right: 24px;
@@ -172,7 +192,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { t } = useStableTranslation();
+  const pathname = usePathname();
+  const router = useRouter();
   const openContact = useContactStore((state) => state.openModal);
+
+  const showBackButton =
+    pathname.startsWith("/releases/") || pathname === "/me/profile";
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINTS.mobile})`);
@@ -222,7 +247,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Suspense>
         </SidebarWrap>
         <Main>
-          <Content>{isInitialized ? children : <InitPlaceholder />}</Content>
+          <Content>
+            {showBackButton && (
+              <BackRow>
+                <BackButton type="button" onClick={() => router.back()}>
+                  <ArrowLeft size={14} />
+                  {t("header.back")}
+                </BackButton>
+              </BackRow>
+            )}
+            {isInitialized ? children : <InitPlaceholder />}
+          </Content>
         </Main>
       </CenteredContainer>
       <ToastHost />
