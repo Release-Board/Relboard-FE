@@ -47,6 +47,7 @@ const List = styled.ul`
   gap: 4px;
 `;
 
+
 const NavLink = styled(Link) <{ $active: boolean }>`
   display: block;
   padding: 8px 10px;
@@ -117,19 +118,23 @@ const SupportSection = styled.div`
 
 const SupportButton = styled.button`
   width: 100%;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px dashed ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.surface};
-  color: ${({ theme }) => theme.colors.text};
-  padding: 10px 12px;
+  background: ${({ theme }) => theme.colors.surfaceRaised};
+  color: ${({ theme }) => theme.colors.muted};
+  padding: 9px 12px;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   display: inline-flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  opacity: 0.85;
+  transition: all 160ms ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceRaised};
+    background: ${({ theme }) => theme.colors.surface};
+    color: ${({ theme }) => theme.colors.text};
+    opacity: 1;
   }
 `;
 
