@@ -366,7 +366,7 @@ export default function TrendingSection() {
           {data.map((release, index) => (
             <RankItem
               key={release.id}
-              href={`/tech-stacks/${release.techStack.name}?releaseId=${release.id}`}
+              href={`/releases/${release.id}`}
               onClick={() =>
                 trackEvent("trending_item_click", {
                   rank_position: index + 1,
