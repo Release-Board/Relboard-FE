@@ -29,6 +29,10 @@ const Container = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 0 24px;
+
+  @media (max-width: 768px) {
+    padding: 0 12px;
+  }
 `;
 
 const Section = styled.section<{ $delay?: string }>`
@@ -52,6 +56,10 @@ const Hero = styled(Section)`
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   align-items: center;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const Glow = styled.div`
@@ -65,7 +73,7 @@ const Glow = styled.div`
   );
   filter: blur(10px);
   z-index: 0;
-  opacity: ${({ theme }) => (theme.mode === "dark" ? 1 : 0.45)};
+  opacity: 0.7;
 `;
 
 const GridBackdrop = styled.div`
@@ -77,7 +85,7 @@ const GridBackdrop = styled.div`
     ),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 32px 32px;
-  opacity: ${({ theme }) => (theme.mode === "dark" ? 0.25 : 0.18)};
+  opacity: 0.2;
   pointer-events: none;
 `;
 
@@ -99,9 +107,12 @@ const HeroVisual = styled.div`
   gap: 12px;
   position: relative;
   z-index: 1;
+  min-width: 0;
+  max-width: 100%;
 
   @media (max-width: 900px) {
     grid-column: span 12;
+    width: 100%;
   }
 `;
 
@@ -221,6 +232,10 @@ const VisualCard = styled.div`
   display: grid;
   gap: 10px;
   box-shadow: ${({ theme }) => theme.shadows.soft};
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 const VisualTitle = styled.div`
