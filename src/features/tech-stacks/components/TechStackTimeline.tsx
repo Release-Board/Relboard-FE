@@ -3,9 +3,14 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
+import { useSearchParams } from "next/navigation";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
-import { fetchTechStackReleases, fetchTechStacks } from "@/lib/api/relboard";
+import {
+  fetchReleaseById,
+  fetchTechStackReleases,
+  fetchTechStacks,
+} from "@/lib/api/relboard";
 import type { TagType } from "@/lib/api/types";
 import ReleaseCard from "@/features/releases/components/ReleaseCard";
 import ReleaseCardSkeleton from "@/features/releases/components/ReleaseCardSkeleton";
@@ -61,7 +66,12 @@ type Props = {
 export default function TechStackTimeline({ techStackName }: Props) {
   const [tags, setTags] = useState<TagType[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const hasAutoScrolledRef = useRef(false);
   const { t } = useStableTranslation();
+  const searchParams = useSearchParams();
+  const highlightIdParam = searchParams.get("releaseId");
+  const highlightId = highlightIdParam ? Number(highlightIdParam) : null;
+  const highlightIdValid = Number.isFinite(highlightId ?? NaN);
 
   const { data: techStacks } = useQuery({
     queryKey: ["tech-stacks"],
@@ -95,6 +105,34 @@ export default function TechStackTimeline({ techStackName }: Props) {
     () => data?.pages.flatMap((page) => page.content) ?? [],
     [data]
   );
+
+  const { data: highlightRelease } = useQuery({
+    queryKey: ["release-detail", highlightId],
+    queryFn: () => fetchReleaseById(highlightId as number),
+    enabled: Boolean(highlightIdValid),
+  });
+
+  const orderedReleases = useMemo(() => {
+    if (
+      !highlightRelease ||
+      highlightRelease.techStack.name !== techStackName ||
+      !highlightIdValid
+    ) {
+      return releases;
+    }
+    const filtered = releases.filter((release) => release.id !== highlightRelease.id);
+    return [highlightRelease, ...filtered];
+  }, [highlightRelease, releases, techStackName]);
+
+  useEffect(() => {
+    if (!highlightIdValid || !highlightId) return;
+    if (hasAutoScrolledRef.current) return;
+    const target = document.getElementById(`release-${highlightId}`);
+    if (target) {
+      hasAutoScrolledRef.current = true;
+      target.scrollIntoView({ block: "start", behavior: "smooth" });
+    }
+  }, [highlightId, highlightIdValid, orderedReleases.length]);
 
   useEffect(() => {
     if (!sentinelRef.current) return;
@@ -133,8 +171,12 @@ export default function TechStackTimeline({ techStackName }: Props) {
         <StateMessage>{t("techStack.empty")}</StateMessage>
       )}
 
-      {releases.map((release) => (
-        <ReleaseCard key={release.id} release={release} />
+      {orderedReleases.map((release) => (
+        <ReleaseCard
+          key={release.id}
+          release={release}
+          highlighted={Boolean(highlightId && release.id === highlightId)}
+        />
       ))}
 
       {isFetchingNextPage &&

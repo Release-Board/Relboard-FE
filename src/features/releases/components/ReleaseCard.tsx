@@ -12,16 +12,25 @@ import BookmarkButton from "@/features/bookmarks/components/BookmarkButton";
 import { trackReleaseView } from "@/lib/api/relboard";
 import CommentsSection from "@/features/comments/components/CommentsSection";
 
-const Card = styled.article`
+const Card = styled.article<{ $highlight?: boolean }>`
   border-radius: 14px;
   background: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid ${({ theme, $highlight }) =>
+    $highlight ? theme.colors.accentStrong : theme.colors.border};
   padding: 18px;
   display: grid;
   gap: 10px;
   box-shadow: ${({ theme }) => theme.shadows.soft};
   transition: all 150ms ease;
   cursor: pointer;
+  position: relative;
+
+  ${({ $highlight, theme }) =>
+    $highlight &&
+    `
+      box-shadow: 0 0 0 1px ${theme.colors.accentStrong},
+        0 12px 32px rgba(5, 150, 105, 0.28);
+    `}
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.borderHover};
@@ -320,9 +329,10 @@ function formatDate(value: string, locale: string) {
 type Props = {
   release: ReleaseResponse;
   onOpen?: () => void;
+  highlighted?: boolean;
 };
 
-export default function ReleaseCard({ release, onOpen }: Props) {
+export default function ReleaseCard({ release, onOpen, highlighted }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [showKorean, setShowKorean] = useState(Boolean(release.contentKo));
   const hasContent = Boolean(release.content || release.contentKo);
@@ -382,7 +392,7 @@ export default function ReleaseCard({ release, onOpen }: Props) {
   }, [expanded, hasInsightContent]);
 
   return (
-    <Card>
+    <Card $highlight={highlighted} id={`release-${release.id}`}>
       <Header>
         <IconBox $bgColor={release.techStack.colorHex ?? undefined}>
           {release.techStack.name.slice(0, 1).toUpperCase()}

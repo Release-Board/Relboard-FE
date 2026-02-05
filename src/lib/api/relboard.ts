@@ -220,6 +220,18 @@ export async function fetchTrendingReleases(params: {
   );
 }
 
+export async function fetchReleaseById(releaseId: number) {
+  const response = await fetchJson<CommonApiResponse<ReleaseResponse>>(
+    `/api/v1/releases/${releaseId}`
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to fetch release detail");
+  }
+
+  return response.data;
+}
+
 export function trackReleaseView(releaseId: number) {
   fetch(`${API_BASE_URL}/api/v1/releases/${releaseId}/view`, {
     method: "POST",
