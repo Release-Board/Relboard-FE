@@ -125,8 +125,11 @@ export default function TechStackSidebar() {
 
   const { data: subscriptions } = useQuery({
     queryKey: ["my-subscriptions"],
-    queryFn: fetchMySubscriptions,
-    enabled: !!user,
+    queryFn: async () => {
+      if (!user) return [];
+      return fetchMySubscriptions();
+    },
+    enabled: true,
   });
 
   const categories = Object.entries(

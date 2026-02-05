@@ -17,8 +17,11 @@ export function useSubscriptions() {
 
   const subscriptionsQuery = useQuery({
     queryKey: ["my-subscriptions"],
-    queryFn: fetchMySubscriptions,
-    enabled,
+    queryFn: async () => {
+      if (!enabled) return [];
+      return fetchMySubscriptions();
+    },
+    enabled: true,
   });
 
   const subscribeMutation = useMutation<
