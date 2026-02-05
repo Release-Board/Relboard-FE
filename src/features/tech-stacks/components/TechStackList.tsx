@@ -1,28 +1,19 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo } from "react";
 import styled from "styled-components";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchTechStacks } from "@/lib/api/relboard";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
 import type { TechStackResponse } from "@/lib/api/types";
-import SearchBar from "@/features/releases/components/SearchBar";
 
 const Section = styled.section`
   display: grid;
   gap: 16px;
-`;
-
-const MobileSearch = styled.div`
-  display: none;
-
-  @media (max-width: 768px) {
-    display: block;
-  }
 `;
 
 const List = styled.div`
@@ -124,8 +115,6 @@ function filterStacks(
 
 export default function TechStackList() {
   const { t, language } = useStableTranslation();
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   const keywordParam = searchParams.get("keyword") ?? "";
@@ -140,38 +129,14 @@ export default function TechStackList() {
     [data, categoryParam, keywordParam]
   );
 
-  const handleKeywordChange = useCallback(
-    (value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      const normalized = value.trim();
-      if (normalized) {
-        params.set("keyword", normalized);
-      } else {
-        params.delete("keyword");
-      }
-      const query = params.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname);
-    },
-    [pathname, router, searchParams]
-  );
-
-  if (isLoading) {
-    return <StateMessage>{t("techStackList.loading")}</StateMessage>;
-  }
-
-  if (isError) {
-    return <StateMessage>{t("techStackList.error")}</StateMessage>;
-  }
-
-  if (stacks.length === 0) {
-    return <StateMessage>{t("techStackList.empty")}</StateMessage>;
-  }
-
   return (
     <Section>
-      <MobileSearch>
-        <SearchBar keyword={keywordParam} onChange={handleKeywordChange} />
-      </MobileSearch>
+      {isLoading && <StateMessage>{t("techStackList.loading")}</StateMessage>}
+      {isError && <StateMessage>{t("techStackList.error")}</StateMessage>}
+      {!isLoading && !isError && stacks.length === 0 && (
+        <StateMessage>{t("techStackList.empty")}</StateMessage>
+      )}
+      {!isLoading && !isError && stacks.length > 0 && (
       <List>
         {stacks.map((stack) => (
           <Card key={stack.id}>
@@ -192,6 +157,7 @@ export default function TechStackList() {
           </Card>
         ))}
       </List>
+      )}
     </Section>
   );
 }
