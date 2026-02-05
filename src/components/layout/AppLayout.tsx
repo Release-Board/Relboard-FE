@@ -8,6 +8,8 @@ import Header from "./Header";
 import { useAuthStore } from "@/lib/store/authStore";
 import ToastHost from "@/components/common/ToastHost";
 import ContactModal from "@/components/support/ContactModal";
+import { MessageCircle } from "lucide-react";
+import { useContactStore } from "@/lib/store/contactStore";
 
 // Breakpoints
 const BREAKPOINTS = {
@@ -32,11 +34,13 @@ const HeaderWrap = styled.div`
 
 const CenteredContainer = styled.div`
   display: flex;
+  align-items: stretch;
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
   padding: 0 ${({ theme }) => theme.spacing[6]};
   flex: 1;
+  position: relative;
 
   @media (max-width: ${BREAKPOINTS.tablet}) {
     padding: 0 ${({ theme }) => theme.spacing[4]};
@@ -46,7 +50,6 @@ const CenteredContainer = styled.div`
 const SidebarWrap = styled.aside<{ $isOpen?: boolean }>`
   width: 240px;
   flex-shrink: 0;
-  border-right: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.background};
   position: sticky;
   top: 64px;
@@ -89,6 +92,23 @@ const Main = styled.main`
   display: flex;
   flex-direction: column;
   min-width: 0;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    background: ${({ theme }) => theme.colors.border};
+  }
+
+  @media (max-width: ${BREAKPOINTS.tablet}) {
+    &::before {
+      display: none;
+    }
+  }
 `;
 
 const Content = styled.div`
@@ -99,6 +119,27 @@ const Content = styled.div`
 
   @media (max-width: ${BREAKPOINTS.mobile}) {
     padding: 20px 16px;
+  }
+`;
+
+const FloatingSupportButton = styled.button`
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
+  box-shadow: ${({ theme }) => theme.shadows.soft};
+  cursor: pointer;
+  z-index: 900;
+
+  @media (min-width: ${BREAKPOINTS.tablet}) {
+    display: inline-flex;
   }
 `;
 
@@ -131,6 +172,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { t } = useStableTranslation();
+  const openContact = useContactStore((state) => state.openModal);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINTS.mobile})`);
@@ -185,6 +227,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </CenteredContainer>
       <ToastHost />
       <ContactModal />
+      <FloatingSupportButton type="button" onClick={openContact}>
+        <MessageCircle size={16} />
+        {t("support.contactButton")}
+      </FloatingSupportButton>
     </LayoutWrap>
   );
 }

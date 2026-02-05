@@ -4,12 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import styled from "styled-components";
-import { MessageCircle } from "lucide-react";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import { fetchTechStacks, fetchMySubscriptions } from "@/lib/api/relboard";
 import { useAuthStore } from "@/lib/store/authStore";
-import { useContactStore } from "@/lib/store/contactStore";
 
 const Container = styled.div`
   display: flex;
@@ -111,32 +109,6 @@ const Chip = styled(Link) <{ $active?: boolean }>`
   }
 `;
 
-const SupportSection = styled.div`
-  margin-top: auto;
-  padding-top: 16px;
-`;
-
-const SupportButton = styled.button`
-  width: 100%;
-  border: 1px dashed ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.surfaceRaised};
-  color: ${({ theme }) => theme.colors.muted};
-  padding: 9px 12px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  opacity: 0.85;
-  transition: all 160ms ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.surface};
-    color: ${({ theme }) => theme.colors.text};
-    opacity: 1;
-  }
-`;
 
 export default function TechStackSidebar() {
   const pathname = usePathname();
@@ -145,7 +117,6 @@ export default function TechStackSidebar() {
   const keywordParam = searchParams.get("keyword") ?? "";
   const { user } = useAuthStore();
   const { t } = useStableTranslation();
-  const openContact = useContactStore((state) => state.openModal);
 
   const { data: techStacks } = useQuery({
     queryKey: ["tech-stacks"],
@@ -227,12 +198,6 @@ export default function TechStackSidebar() {
           </>
         )}
       </Sections>
-      <SupportSection>
-        <SupportButton type="button" onClick={openContact}>
-          <MessageCircle size={16} />
-          {t("support.contactButton")}
-        </SupportButton>
-      </SupportSection>
     </Container>
   );
 }
