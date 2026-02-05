@@ -170,6 +170,12 @@ const resources = {
       releaseCard: {
         translationNotice: "AI가 번역한 내용입니다",
       },
+      releaseDetail: {
+        share: "공유",
+        linkCopied: "링크를 복사했어요.",
+        linkCopyFail: "링크 복사에 실패했어요.",
+        contentTitle: "릴리즈 상세",
+      },
       comments: {
         title: "댓글",
         count: "{{count}}개",
@@ -403,6 +409,12 @@ const resources = {
       },
       releaseCard: {
         translationNotice: "AI translated content",
+      },
+      releaseDetail: {
+        share: "Share",
+        linkCopied: "Link copied.",
+        linkCopyFail: "Failed to copy link.",
+        contentTitle: "Release details",
       },
       comments: {
         title: "Comments",
