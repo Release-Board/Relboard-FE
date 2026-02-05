@@ -20,12 +20,13 @@ const LayoutWrap = styled.div`
   flex-direction: column;
   min-height: 100vh;
   background-color: ${({ theme }) => theme.colors.background};
+  overflow-x: hidden;
 `;
 
 const HeaderWrap = styled.div`
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   width: 100%;
 `;
 
@@ -54,9 +55,10 @@ const SidebarWrap = styled.aside<{ $isOpen?: boolean }>`
 
   @media (max-width: ${BREAKPOINTS.tablet}) {
     position: fixed;
-    top: 64px;
+    top: 0;
     left: 0;
-    z-index: 99;
+    z-index: 200;
+    height: 100vh;
     transform: ${({ $isOpen }) => ($isOpen ? "translateX(0)" : "translateX(-100%)")};
     transition: transform 200ms ease;
     box-shadow: ${({ $isOpen }) => ($isOpen ? "4px 0 20px rgba(0,0,0,0.5)" : "none")};
@@ -73,12 +75,12 @@ const Overlay = styled.div<{ $isOpen?: boolean }>`
   @media (max-width: ${BREAKPOINTS.tablet}) {
     display: ${({ $isOpen }) => ($isOpen ? "block" : "none")};
     position: fixed;
-    top: 64px;
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 98;
+    z-index: 199;
   }
 `;
 

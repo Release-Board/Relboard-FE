@@ -5,9 +5,21 @@ import Link from "next/link";
 import { useAuthStore } from "@/lib/store/authStore";
 import { logout } from "@/lib/api/client";
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
-import { Moon, Sun } from "lucide-react";
+import {
+  Bell,
+  Bookmark,
+  Flame,
+  Home,
+  Info,
+  Languages,
+  MessageCircle,
+  Moon,
+  Sun,
+  Users,
+} from "lucide-react";
 import { useThemeStore } from "@/lib/store/themeStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
 import { trackEvent } from "@/lib/analytics/ga";
@@ -17,6 +29,8 @@ const HeaderWrap = styled.header`
   height: 64px;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.background};
+  position: relative;
+  z-index: 1000;
 `;
 
 const HeaderInner = styled.div`
@@ -28,6 +42,8 @@ const HeaderInner = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 0 ${({ theme }) => theme.spacing[6]};
+  min-width: 0;
+  overflow-x: hidden;
 
   @media (max-width: 1024px) {
     padding: 0 ${({ theme }) => theme.spacing[4]};
@@ -38,6 +54,7 @@ const Left = styled.div`
   display: flex;
   align-items: center;
   gap: 24px;
+  min-width: 0;
 `;
 
 const Logo = styled(Link)`
@@ -68,6 +85,7 @@ const Actions = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 `;
 
 const SearchWrap = styled.div`
@@ -122,6 +140,10 @@ const IconButton = styled.button`
   justify-content: center;
   color: ${({ theme }) => theme.colors.muted};
   cursor: pointer;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const LangButton = styled.button`
@@ -136,6 +158,10 @@ const LangButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.muted};
   cursor: pointer;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const Button = styled.button`
@@ -152,48 +178,6 @@ const Button = styled.button`
   }
 `;
 
-const MobileSearchButton = styled.button`
-  display: none;
-  background: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.colors.muted};
-  cursor: pointer;
-
-  @media (max-width: 768px) {
-    display: inline-flex;
-  }
-`;
-
-const MobileSearchPanel = styled.div<{ $open: boolean }>`
-  display: none;
-
-  @media (max-width: 768px) {
-    display: ${({ $open }) => ($open ? "block" : "none")};
-    position: fixed;
-    top: 64px;
-    left: 0;
-    right: 0;
-    padding: 12px 16px;
-    background: ${({ theme }) => theme.colors.background};
-    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-    z-index: 120;
-  }
-`;
-
-const MobileSearchInput = styled.input`
-  width: 100%;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.text};
-  background: ${({ theme }) => theme.colors.surface};
-`;
 
 const ProfileMenuWrap = styled.div`
   position: relative;
@@ -241,9 +225,7 @@ const AvatarFallback = styled.div`
 `;
 
 const ProfileMenu = styled.div`
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  position: fixed;
   min-width: 160px;
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -252,17 +234,20 @@ const ProfileMenu = styled.div`
   padding: 8px;
   display: grid;
   gap: 4px;
-  z-index: 200;
+  z-index: 1001;
 `;
 
 const MobileMenuOverlay = styled.div<{ $open: boolean }>`
   display: none;
 
   @media (max-width: 768px) {
-    display: ${({ $open }) => ($open ? "block" : "none")};
+    display: block;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.45);
+    opacity: ${({ $open }) => ($open ? 1 : 0)};
+    pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
+    transition: opacity 220ms ease;
     z-index: 119;
   }
 `;
@@ -271,26 +256,90 @@ const MobileMenuDrawer = styled.div<{ $open: boolean }>`
   display: none;
 
   @media (max-width: 768px) {
-    display: ${({ $open }) => ($open ? "flex" : "none")};
+    display: flex;
     position: fixed;
-    top: 64px;
+    top: 0;
     left: 0;
-    right: 0;
-    background: ${({ theme }) => theme.colors.background};
-    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+    bottom: 0;
+    width: 280px;
+    background: ${({ theme }) => theme.colors.surface};
+    border-right: 1px solid ${({ theme }) => theme.colors.border};
     padding: 16px;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     z-index: 120;
+    transform: translateX(${({ $open }) => ($open ? "0" : "-100%")});
+    transition: transform 300ms cubic-bezier(0.34, 1.2, 0.64, 1);
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.2);
+    will-change: transform;
   }
 `;
 
-const MobileMenuLink = styled(Link)`
+
+const MobileMenuHeader = styled.div`
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+`;
+
+const MobileMenuClose = styled(IconButton)`
+  @media (max-width: 768px) {
+    display: inline-flex;
+  }
+`;
+
+const MobileProfile = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+`;
+
+const MobileProfileName = styled.div`
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const MobileProfileTitle = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 600;
+`;
+
+const MobileProfileSub = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.muted};
+`;
+
+const MobileMenuSection = styled.div`
+  display: grid;
+  gap: 6px;
+`;
+
+const MobileMenuDivider = styled.div`
+  height: 1px;
+  width: 100%;
+  background: ${({ theme }) => theme.colors.border};
+  margin: 6px 0;
+`;
+
+const MobileMenuLink = styled(Link) <{ $active?: boolean }>`
   padding: 10px 12px;
   border-radius: 10px;
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.text : theme.colors.muted};
   text-decoration: none;
   font-size: ${({ theme }) => theme.fontSizes.sm};
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.surfaceRaised : "transparent"};
 
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceRaised};
@@ -306,6 +355,9 @@ const MobileMenuButton = styled.button`
   text-align: left;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceRaised};
@@ -360,15 +412,15 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
   const language = useLanguageStore((state) => state.language);
   const toggleLanguage = useLanguageStore((state) => state.toggle);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement | null>(null);
+  const profileButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [profileMenuPos, setProfileMenuPos] = useState<{ top: number; right: number } | null>(null);
   const openContact = useContactStore((state) => state.openModal);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchKeyword.trim().length >= 2) {
       trackEvent("internal_search", { search_term: searchKeyword.trim() });
       router.push(`/?keyword=${encodeURIComponent(searchKeyword.trim())}`);
-      setMobileSearchOpen(false);
       onMobileMenuClose?.();
     }
   };
@@ -396,6 +448,26 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    const updatePosition = () => {
+      const button = profileButtonRef.current;
+      if (!button) return;
+      const rect = button.getBoundingClientRect();
+      setProfileMenuPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [profileOpen]);
 
   if (!mounted || !isInitialized) {
     return (
@@ -447,16 +519,6 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
               onKeyDown={handleSearch}
             />
           </SearchWrap>
-          <MobileSearchButton
-            type="button"
-            aria-label={t("header.searchPlaceholder")}
-            onClick={() => setMobileSearchOpen((prev) => !prev)}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-          </MobileSearchButton>
           <IconButton
             type="button"
             aria-label={t("header.themeToggle")}
@@ -487,7 +549,11 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
           {user ? (
             <>
               <ProfileMenuWrap ref={profileRef}>
-                <ProfileButton type="button" onClick={() => setProfileOpen((prev) => !prev)}>
+                <ProfileButton
+                  type="button"
+                  onClick={() => setProfileOpen((prev) => !prev)}
+                  ref={profileButtonRef}
+                >
                   {user.profileImageUrl && (
                     <Avatar
                       src={user.profileImageUrl}
@@ -500,8 +566,10 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
                     </AvatarFallback>
                   )}
                 </ProfileButton>
-                {profileOpen && (
-                  <ProfileMenu>
+              </ProfileMenuWrap>
+              {profileOpen && mounted && profileMenuPos &&
+                createPortal(
+                  <ProfileMenu style={{ top: profileMenuPos.top, right: profileMenuPos.right }}>
                     <MenuButton type="button" $muted>
                       {user.nickname}
                       {t("header.profileSuffix")}
@@ -513,9 +581,9 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
                     <MenuButton type="button" onClick={handleLogout}>
                       {t("header.logout")}
                     </MenuButton>
-                  </ProfileMenu>
+                  </ProfileMenu>,
+                  document.body
                 )}
-              </ProfileMenuWrap>
             </>
           ) : (
             <Button onClick={() => (window.location.href = "/login")}>
@@ -524,41 +592,119 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
           )}
         </Actions>
       </HeaderInner>
-      <MobileSearchPanel $open={mobileSearchOpen}>
-        <MobileSearchInput
-          placeholder={t("header.searchPlaceholder")}
-          value={searchKeyword}
-          onChange={(event) => setSearchKeyword(event.target.value)}
-          onKeyDown={handleSearch}
-          autoFocus
-        />
-      </MobileSearchPanel>
       <MobileMenuOverlay $open={Boolean(mobileMenuOpen)} onClick={onMobileMenuClose} />
       <MobileMenuDrawer $open={Boolean(mobileMenuOpen)}>
-        <MobileMenuLink href="/" onClick={onMobileMenuClose}>
+        <MobileMenuHeader>
+          <MobileProfile>
+            {user?.profileImageUrl ? (
+              <Avatar
+                src={user.profileImageUrl}
+                alt={`${user.nickname} 프로필 이미지`}
+              />
+            ) : (
+              <AvatarFallback aria-hidden="true">
+                {user?.nickname?.trim().slice(0, 1) || "U"}
+              </AvatarFallback>
+            )}
+            <MobileProfileName>
+              <MobileProfileTitle>
+                {user?.nickname ?? t("header.login")}
+                {user ? t("header.profileSuffix") : ""}
+              </MobileProfileTitle>
+              <MobileProfileSub>
+                {user ? t("header.profileEdit") : t("auth.loggingIn")}
+              </MobileProfileSub>
+            </MobileProfileName>
+          </MobileProfile>
+          <MobileMenuClose
+            type="button"
+            aria-label={t("common.close")}
+            onClick={onMobileMenuClose}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </MobileMenuClose>
+        </MobileMenuHeader>
+        <MobileMenuSection>
+          <MobileMenuLink
+            href="/"
+            $active={pathname === "/"}
+            onClick={onMobileMenuClose}
+          >
+            <Home size={16} />
           {t("header.overview")}
-        </MobileMenuLink>
-        <MobileMenuLink href="/me/subscriptions" onClick={onMobileMenuClose}>
+          </MobileMenuLink>
+          <MobileMenuLink
+            href="/me/subscriptions"
+            $active={pathname === "/me/subscriptions"}
+            onClick={onMobileMenuClose}
+          >
+            <Users size={16} />
           {t("header.following")}
-        </MobileMenuLink>
-        <MobileMenuLink href="/me/bookmarks" onClick={onMobileMenuClose}>
+          </MobileMenuLink>
+          <MobileMenuLink
+            href="/me/bookmarks"
+            $active={pathname === "/me/bookmarks"}
+            onClick={onMobileMenuClose}
+          >
+            <Bookmark size={16} />
           {t("header.bookmarks")}
-        </MobileMenuLink>
-        <MobileMenuLink href="/trending" onClick={onMobileMenuClose}>
+          </MobileMenuLink>
+          <MobileMenuLink
+            href="/trending"
+            $active={pathname === "/trending"}
+            onClick={onMobileMenuClose}
+          >
+            <Flame size={16} />
           {t("header.trending")}
-        </MobileMenuLink>
-        <MobileMenuLink href="/about" onClick={onMobileMenuClose}>
+          </MobileMenuLink>
+          <MobileMenuLink
+            href="/about"
+            $active={pathname === "/about"}
+            onClick={onMobileMenuClose}
+          >
+            <Info size={16} />
           {t("header.about")}
-        </MobileMenuLink>
-        <MobileMenuButton
-          type="button"
-          onClick={() => {
-            onMobileMenuClose?.();
-            openContact();
-          }}
-        >
+          </MobileMenuLink>
+          <MobileMenuButton
+            type="button"
+            onClick={() => {
+              onMobileMenuClose?.();
+              openContact();
+            }}
+          >
+            <MessageCircle size={16} />
           {t("support.contactButton")}
-        </MobileMenuButton>
+          </MobileMenuButton>
+        </MobileMenuSection>
+        <MobileMenuDivider />
+        <MobileMenuSection>
+          <MobileMenuButton
+            type="button"
+            onClick={() => {
+              toggleTheme();
+            }}
+          >
+            {themeMode === "dark" ? <Moon size={16} /> : <Sun size={16} />}
+            {t("header.themeToggle")}
+          </MobileMenuButton>
+          <MobileMenuButton
+            type="button"
+            onClick={() => {
+              const next = language === "ko" ? "en" : "ko";
+              trackEvent("language_toggle", { selected_lang: next });
+              toggleLanguage();
+            }}
+          >
+            <Languages size={16} />
+            {t("header.languageToggle")}
+          </MobileMenuButton>
+          <MobileMenuButton type="button">
+            <Bell size={16} />
+            {t("header.notifications")}
+          </MobileMenuButton>
+        </MobileMenuSection>
       </MobileMenuDrawer>
     </HeaderWrap>
   );
