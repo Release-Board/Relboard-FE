@@ -630,7 +630,7 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
                 {user ? t("header.profileSuffix") : ""}
               </MobileProfileTitle>
               <MobileProfileSub>
-                {user ? t("header.profileEdit") : t("auth.loggingIn")}
+                {user ? t("header.profileEdit") : t("auth.loginRequired")}
               </MobileProfileSub>
             </MobileProfileName>
           </MobileProfile>

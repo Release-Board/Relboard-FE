@@ -131,6 +131,7 @@ const resources = {
       },
       auth: {
         loggingIn: "로그인 중입니다...",
+        loginRequired: "로그인이 필요해요.",
         loading: "로딩중...",
       },
       about: {
@@ -372,6 +373,7 @@ const resources = {
       },
       auth: {
         loggingIn: "Logging in...",
+        loginRequired: "Please log in.",
         loading: "Loading...",
       },
       about: {
