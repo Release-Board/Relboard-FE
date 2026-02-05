@@ -138,7 +138,8 @@ const Panel = styled.div`
   display: grid;
   gap: 16px;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
 

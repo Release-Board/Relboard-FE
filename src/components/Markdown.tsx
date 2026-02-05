@@ -11,7 +11,9 @@ const MarkdownWrap = styled.div`
   line-height: 1.7;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
+  overflow-wrap: anywhere;
+  -webkit-overflow-scrolling: touch;
 
   h1,
   h2,
@@ -57,6 +59,7 @@ const MarkdownWrap = styled.div`
     border-radius: ${({ theme }) => theme.radii.md};
     overflow: auto;
     max-width: 100%;
+    overflow-wrap: normal;
   }
 
   table {
