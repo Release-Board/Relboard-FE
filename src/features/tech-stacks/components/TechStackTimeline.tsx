@@ -1,9 +1,9 @@
 "use client";
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 
 import {
@@ -16,6 +16,7 @@ import ReleaseCard from "@/features/releases/components/ReleaseCard";
 import ReleaseCardSkeleton from "@/features/releases/components/ReleaseCardSkeleton";
 import TagFilter from "@/features/releases/components/TagFilter";
 import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
+import SearchBar from "@/features/releases/components/SearchBar";
 
 const TimelineWrap = styled.section`
   display: grid;
@@ -47,6 +48,10 @@ const Sub = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
+const SearchRow = styled.div`
+  max-width: 360px;
+`;
+
 const StateMessage = styled.div`
   padding: 24px;
   border-radius: ${({ theme }) => theme.radii.md};
@@ -69,9 +74,12 @@ export default function TechStackTimeline({ techStackName }: Props) {
   const hasAutoScrolledRef = useRef(false);
   const { t } = useStableTranslation();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const highlightIdParam = searchParams.get("releaseId");
   const highlightId = highlightIdParam ? Number(highlightIdParam) : null;
   const highlightIdValid = Number.isFinite(highlightId ?? NaN);
+  const keywordParam = searchParams.get("keyword") ?? "";
 
   const { data: techStacks } = useQuery({
     queryKey: ["tech-stacks"],
@@ -84,12 +92,13 @@ export default function TechStackTimeline({ techStackName }: Props) {
   );
 
   const releasesQuery = useInfiniteQuery({
-    queryKey: ["tech-stack-releases", techStackName, tags],
+    queryKey: ["tech-stack-releases", techStackName, tags, keywordParam],
     queryFn: ({ pageParam = 0 }) =>
       fetchTechStackReleases(techStackName, {
         page: pageParam,
         size: 20,
         tags,
+        keyword: keywordParam || undefined,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
@@ -104,6 +113,21 @@ export default function TechStackTimeline({ techStackName }: Props) {
   const releases = useMemo(
     () => data?.pages.flatMap((page) => page.content) ?? [],
     [data]
+  );
+
+  const handleKeywordChange = useCallback(
+    (value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      const normalized = value.trim();
+      if (normalized) {
+        params.set("keyword", normalized);
+      } else {
+        params.delete("keyword");
+      }
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname);
+    },
+    [pathname, router, searchParams]
   );
 
   const { data: highlightRelease } = useQuery({
@@ -157,6 +181,10 @@ export default function TechStackTimeline({ techStackName }: Props) {
         </TitleRow>
         <Sub>{t("techStack.subtitle")}</Sub>
       </Heading>
+
+      <SearchRow>
+        <SearchBar keyword={keywordParam} onChange={handleKeywordChange} />
+      </SearchRow>
 
       <TagFilter value={tags} onChange={setTags} />
 
