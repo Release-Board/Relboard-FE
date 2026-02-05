@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import styled from "styled-components";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
+import { useRouter } from "next/navigation";
 
-import Markdown from "@/components/Markdown";
 import type { ReleaseResponse, TagType } from "@/lib/api/types";
 import { getTagStyleByTagType } from "@/styles/semantic-tags";
 import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
 import BookmarkButton from "@/features/bookmarks/components/BookmarkButton";
-import { trackReleaseView } from "@/lib/api/relboard";
-import CommentsSection from "@/features/comments/components/CommentsSection";
 
 const Card = styled.article<{ $highlight?: boolean }>`
   border-radius: 14px;
@@ -165,157 +163,6 @@ const HeaderActions = styled.div`
   }
 `;
 
-const ExpandButton = styled.button`
-  border: none;
-  background: transparent;
-  color: ${({ theme }) => theme.colors.muted};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  cursor: pointer;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
-const MarkdownPanel = styled.div`
-  position: relative;
-  margin-top: 6px;
-  padding: 20px;
-  background: ${({ theme }) => theme.colors.surfaceRaised};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-`;
-
-const InsightTabs = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-`;
-
-const InsightTabButton = styled.button<{ $active: boolean }>`
-  padding: 6px 14px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ theme, $active }) =>
-    $active ? theme.colors.surfaceRaised : theme.colors.surface};
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.text : theme.colors.muted};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 160ms ease;
-`;
-
-const InsightBlock = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-const InsightTitle = styled.h5`
-  margin: 0;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const InsightList = styled.ul`
-  margin: 0;
-  padding-left: 18px;
-  color: ${({ theme }) => theme.colors.muted};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  display: grid;
-  gap: 8px;
-`;
-
-const MigrationCard = styled.div`
-  border-radius: ${({ theme }) => theme.radii.md};
-  border: 1px solid ${({ theme }) => theme.colors.badgeBreakingBg};
-  background: rgba(220, 38, 38, 0.05);
-  padding: 12px;
-  display: grid;
-  gap: 8px;
-`;
-
-const CodeBlock = styled.pre`
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  background: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  overflow: auto;
-`;
-
-const KeywordChips = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
-const KeywordChip = styled.span`
-  padding: 4px 10px;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  background: ${({ theme }) => theme.colors.tagBg};
-  color: ${({ theme }) => theme.colors.tagText};
-`;
-
-const InsightEmpty = styled.div`
-  padding: 16px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  color: ${({ theme }) => theme.colors.muted};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-`;
-
-const FileTabs = styled.div`
-  position: absolute;
-  top: -24px;
-  left: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const FileTabButton = styled.button<{ $active: boolean }>`
-  padding: 4px 12px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-bottom: none;
-  border-radius: 10px 10px 0 0;
-  background: ${({ theme, $active }) =>
-    $active ? theme.colors.surfaceRaised : theme.colors.surface};
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.text : theme.colors.muted};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: all 160ms ease;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentStrong};
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-`;
-
-const TranslationNotice = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-  padding: 6px 10px;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  background: rgba(47, 107, 255, 0.12);
-  color: ${({ theme }) => theme.colors.accentStrong};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: 600;
-`;
-
 function formatDate(value: string, locale: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
@@ -333,14 +180,9 @@ type Props = {
 };
 
 export default function ReleaseCard({ release, onOpen, highlighted }: Props) {
-  const [expanded, setExpanded] = useState(false);
-  const [showKorean, setShowKorean] = useState(Boolean(release.contentKo));
   const hasContent = Boolean(release.content || release.contentKo);
-  const canTranslate = Boolean(release.contentKo);
-  const viewTrackedRef = useRef(false);
-  const autoSwitchedRef = useRef(false);
   const { t, language } = useStableTranslation();
-  const [detailTab, setDetailTab] = useState<"INSIGHT" | "FULL">("INSIGHT");
+  const router = useRouter();
 
   const summary = useMemo(() => {
     if (release.shortSummary) return release.shortSummary;
@@ -350,65 +192,30 @@ export default function ReleaseCard({ release, onOpen, highlighted }: Props) {
     return firstLine;
   }, [release.content, release.contentKo, release.shortSummary, release.title]);
 
-  const hasInsightContent = useMemo(
-    () =>
-      Boolean(
-        (release.insights && release.insights.length > 0) ||
-          release.migrationGuide ||
-          (release.technicalKeywords && release.technicalKeywords.length > 0)
-      ),
-    [release.insights, release.migrationGuide, release.technicalKeywords]
-  );
-
-  const trackViewOnce = () => {
-    if (viewTrackedRef.current) return;
-    viewTrackedRef.current = true;
-    trackReleaseView(release.id);
-  };
-
   const openDetails = () => {
     if (!hasContent) return;
-    if (!expanded) {
-      onOpen?.();
-    }
-    setExpanded(true);
+    onOpen?.();
+    router.push(`/releases/${release.id}`);
   };
 
-  useEffect(() => {
-    if (expanded) {
-      trackViewOnce();
-    }
-  }, [expanded]);
-
-  useEffect(() => {
-    if (!expanded) {
-      autoSwitchedRef.current = false;
-      return;
-    }
-    if (!autoSwitchedRef.current && !hasInsightContent) {
-      setDetailTab("FULL");
-      autoSwitchedRef.current = true;
-    }
-  }, [expanded, hasInsightContent]);
-
   return (
-    <Card $highlight={highlighted} id={`release-${release.id}`}>
+    <Card
+      $highlight={highlighted}
+      id={`release-${release.id}`}
+      onClick={openDetails}
+      role="button"
+      aria-label={t("common.viewDetails")}
+    >
       <Header>
         <IconBox $bgColor={release.techStack.colorHex ?? undefined}>
           {release.techStack.name.slice(0, 1).toUpperCase()}
         </IconBox>
         <div>
-          <ReleaseTitle
-            type="button"
-            onClick={() => {
-              trackViewOnce();
-              openDetails();
-            }}
-          >
+          <ReleaseTitle type="button" onClick={openDetails}>
             {release.techStack.name}
           </ReleaseTitle>
         </div>
-        <HeaderActions>
+        <HeaderActions onClick={(event) => event.stopPropagation()}>
           <SubscribeButton techStack={release.techStack} />
           <BookmarkButton release={release} />
         </HeaderActions>
@@ -425,7 +232,12 @@ export default function ReleaseCard({ release, onOpen, highlighted }: Props) {
 
       <Meta>
         <span>{formatDate(release.publishedAt, language)}</span>
-        <Link href={release.sourceUrl} target="_blank" rel="noreferrer">
+        <Link
+          href={release.sourceUrl}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(event) => event.stopPropagation()}
+        >
           {t("common.viewChangelog")}
         </Link>
       </Meta>
@@ -438,130 +250,6 @@ export default function ReleaseCard({ release, onOpen, highlighted }: Props) {
         ))}
       </Tags>
 
-      {hasContent && (
-        <ExpandButton
-          type="button"
-          onClick={() => {
-            if (expanded) {
-              setExpanded(false);
-              return;
-            }
-            openDetails();
-          }}
-        >
-          {expanded ? t("common.collapse") : t("common.viewDetails")}
-        </ExpandButton>
-      )}
-
-      {expanded && hasContent && (
-        <MarkdownPanel>
-          <InsightTabs>
-            <InsightTabButton
-              type="button"
-              $active={detailTab === "INSIGHT"}
-              onClick={() => setDetailTab("INSIGHT")}
-            >
-              {t("insight.tab")}
-            </InsightTabButton>
-            <InsightTabButton
-              type="button"
-              $active={detailTab === "FULL"}
-              onClick={() => setDetailTab("FULL")}
-            >
-              {t("insight.fullNote")}
-            </InsightTabButton>
-          </InsightTabs>
-
-          {detailTab === "INSIGHT" && (
-            <InsightBlock>
-              {!hasInsightContent && (
-                <InsightEmpty>{t("insight.empty")}</InsightEmpty>
-              )}
-              {release.insights && release.insights.length > 0 && (
-                <>
-                  <InsightTitle>{t("insight.highlights")}</InsightTitle>
-                  <InsightList>
-                    {release.insights.map((insight, index) => (
-                      <li key={`${insight.title}-${index}`}>
-                        <strong>{insight.title}</strong> — {insight.reason}
-                      </li>
-                    ))}
-                  </InsightList>
-                </>
-              )}
-
-              {release.migrationGuide && (
-                <>
-                  <InsightTitle>{t("insight.migrationGuide")}</InsightTitle>
-                  <MigrationCard>
-                    {release.migrationGuide.description && (
-                      <span>{release.migrationGuide.description}</span>
-                    )}
-                    {release.migrationGuide.code?.before && (
-                      <CodeBlock>{release.migrationGuide.code.before}</CodeBlock>
-                    )}
-                    {release.migrationGuide.code?.after && (
-                      <CodeBlock>{release.migrationGuide.code.after}</CodeBlock>
-                    )}
-                    {release.migrationGuide.code?.snippet &&
-                      !release.migrationGuide.code.before &&
-                      !release.migrationGuide.code.after && (
-                        <CodeBlock>{release.migrationGuide.code.snippet}</CodeBlock>
-                      )}
-                  </MigrationCard>
-                </>
-              )}
-
-              {release.technicalKeywords && release.technicalKeywords.length > 0 && (
-                <>
-                  <InsightTitle>{t("insight.keywords")}</InsightTitle>
-                  <KeywordChips>
-                    {release.technicalKeywords.map((keyword) => (
-                      <KeywordChip key={keyword}>{keyword}</KeywordChip>
-                    ))}
-                  </KeywordChips>
-                </>
-              )}
-            </InsightBlock>
-          )}
-
-          {detailTab === "FULL" && (
-            <>
-              <FileTabs>
-                {canTranslate ? (
-                  <>
-                    <FileTabButton
-                      type="button"
-                      $active={showKorean}
-                      onClick={() => setShowKorean(true)}
-                    >
-                      {t("language.korean")}
-                    </FileTabButton>
-                    <FileTabButton
-                      type="button"
-                      $active={!showKorean}
-                      onClick={() => setShowKorean(false)}
-                    >
-                      {t("language.english")}
-                    </FileTabButton>
-                  </>
-                ) : (
-                  <FileTabButton type="button" $active>
-                    {t("language.english")}
-                  </FileTabButton>
-                )}
-              </FileTabs>
-              {showKorean && canTranslate && (
-                <TranslationNotice>{t("releaseCard.translationNotice")}</TranslationNotice>
-              )}
-              <Markdown
-                content={showKorean && canTranslate ? release.contentKo ?? "" : release.content}
-              />
-              <CommentsSection releaseId={release.id} />
-            </>
-          )}
-        </MarkdownPanel>
-      )}
     </Card>
   );
 }
