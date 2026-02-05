@@ -137,6 +137,8 @@ const Panel = styled.div`
   padding: 16px;
   display: grid;
   gap: 16px;
+  max-width: 100%;
+  overflow-x: hidden;
 `;
 
 
@@ -179,6 +181,7 @@ const CodeBlock = styled.pre`
   color: ${({ theme }) => theme.colors.text};
   border: 1px solid ${({ theme }) => theme.colors.border};
   overflow: auto;
+  max-width: 100%;
 `;
 
 const KeywordChips = styled.div`
