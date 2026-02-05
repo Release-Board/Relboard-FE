@@ -115,7 +115,7 @@ export default function TechStackSidebar() {
   const searchParams = useSearchParams();
   const activeCategory = searchParams.get("category");
   const keywordParam = searchParams.get("keyword") ?? "";
-  const { user } = useAuthStore();
+  const { user, accessToken, isInitialized } = useAuthStore();
   const { t } = useStableTranslation();
 
   const { data: techStacks } = useQuery({
@@ -123,13 +123,11 @@ export default function TechStackSidebar() {
     queryFn: fetchTechStacks,
   });
 
+  const subscriptionsEnabled = Boolean(isInitialized && user && accessToken);
   const { data: subscriptions } = useQuery({
     queryKey: ["my-subscriptions"],
-    queryFn: async () => {
-      if (!user) return [];
-      return fetchMySubscriptions();
-    },
-    enabled: true,
+    queryFn: fetchMySubscriptions,
+    enabled: subscriptionsEnabled,
   });
 
   const categories = Object.entries(

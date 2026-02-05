@@ -11,17 +11,14 @@ type SubscriptionContext = {
 };
 
 export function useSubscriptions() {
-  const { user, accessToken } = useAuthStore();
-  const enabled = Boolean(user && accessToken);
+  const { user } = useAuthStore();
+  const enabled = Boolean(user);
   const queryClient = useQueryClient();
 
   const subscriptionsQuery = useQuery({
     queryKey: ["my-subscriptions"],
-    queryFn: async () => {
-      if (!enabled) return [];
-      return fetchMySubscriptions();
-    },
-    enabled: true,
+    queryFn: fetchMySubscriptions,
+    enabled,
   });
 
   const subscribeMutation = useMutation<
