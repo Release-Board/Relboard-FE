@@ -112,10 +112,25 @@ const RankItem = styled(Link)`
 `;
 
 const RankNumber = styled.span`
-  font-size: 28px;
-  font-weight: 800;
-  color: ${({ theme }) => theme.colors.text};
+  font-size: clamp(18px, 2.4vw, 28px);
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.accentStrong};
   text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surfaceRaised};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+  }
 `;
 
 const RankChange = styled.span<{ $change: "up" | "down" | "same" }>`
