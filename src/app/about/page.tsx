@@ -58,7 +58,10 @@ const Hero = styled(Section)`
   align-items: center;
 
   @media (max-width: 900px) {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: stretch;
   }
 `;
 
