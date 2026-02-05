@@ -10,6 +10,8 @@ const MarkdownWrap = styled.div`
   color: ${({ theme }) => theme.colors.text};
   line-height: 1.7;
   font-size: ${({ theme }) => theme.fontSizes.sm};
+  max-width: 100%;
+  overflow-x: hidden;
 
   h1,
   h2,
@@ -32,6 +34,7 @@ const MarkdownWrap = styled.div`
 
   p {
     margin: 0 0 12px;
+    word-break: break-word;
   }
 
   ul,
@@ -45,6 +48,7 @@ const MarkdownWrap = styled.div`
     background: ${({ theme }) => theme.colors.surfaceRaised};
     padding: 2px 6px;
     border-radius: ${({ theme }) => theme.radii.sm};
+    word-break: break-word;
   }
 
   pre {
@@ -52,6 +56,19 @@ const MarkdownWrap = styled.div`
     padding: 12px;
     border-radius: ${({ theme }) => theme.radii.md};
     overflow: auto;
+    max-width: 100%;
+  }
+
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
   }
 
   a {
