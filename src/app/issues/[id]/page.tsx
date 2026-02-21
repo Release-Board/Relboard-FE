@@ -8,20 +8,20 @@ import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import { fetchIssueById } from "@/lib/api/relboard";
 import type { IssueResponse, Page } from "@/lib/api/types";
 import { getReadableLabelStyle } from "@/lib/utils/labelColor";
+import Markdown from "@/components/Markdown";
 
 const PageWrap = styled.section`
   display: grid;
   gap: 18px;
 `;
 
-const Grid = styled.div`
+const MetaCard = styled.section`
+  border-radius: ${({ theme }) => theme.radii.lg};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  padding: 16px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 16px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
+  gap: 14px;
 `;
 
 const HeroCard = styled.header`
@@ -37,7 +37,7 @@ const HeroCard = styled.header`
   gap: 12px;
 `;
 
-const MainCard = styled.article`
+const ContentCard = styled.article`
   border-radius: ${({ theme }) => theme.radii.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.surface};
@@ -45,16 +45,6 @@ const MainCard = styled.article`
   display: grid;
   gap: 14px;
   min-width: 0;
-`;
-
-const SideCard = styled.aside`
-  border-radius: ${({ theme }) => theme.radii.lg};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surface};
-  padding: 16px;
-  display: grid;
-  gap: 14px;
-  align-content: start;
 `;
 
 const Title = styled.h1`
@@ -98,6 +88,40 @@ const BadgeRow = styled.div`
   flex-wrap: wrap;
 `;
 
+const MetaGrid = styled.dl`
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const MetaItem = styled.div`
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceRaised};
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+`;
+
+const MetaTerm = styled.dt`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 600;
+`;
+
+const MetaDesc = styled.dd`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: 600;
+`;
+
 const TabRow = styled.div`
   display: inline-flex;
   gap: 8px;
@@ -122,12 +146,7 @@ const Body = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.surfaceRaised};
   padding: 18px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  line-height: 1.8;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow: hidden;
 `;
 
 const BodyKo = styled(Body)`
@@ -212,23 +231,12 @@ const SectionTitle = styled.h2`
   color: ${({ theme }) => theme.colors.text};
 `;
 
-const MetaList = styled.dl`
-  margin: 0;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 8px 10px;
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.muted};
-`;
-
-const MetaLabel = styled.dt`
-  margin: 0;
-  font-weight: 700;
-`;
-
-const MetaValue = styled.dd`
-  margin: 0;
-  color: ${({ theme }) => theme.colors.textSecondary};
+const MetaBottom = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 `;
 
 const StateMessage = styled.div`
@@ -312,69 +320,84 @@ export default function IssueDetailPage() {
         </Meta>
       </HeroCard>
 
-      <Grid>
-        <MainCard>
-          <TabRow>
-            <TabButton
-              type="button"
-              $active={tab === "KO"}
-              onClick={() => setTab("KO")}
-            >
-              {t("issues.showKorean")}
-            </TabButton>
-            <TabButton
-              type="button"
-              $active={tab === "ORIGINAL"}
-              onClick={() => setTab("ORIGINAL")}
-            >
-              {t("issues.showOriginal")}
-            </TabButton>
-          </TabRow>
-          {useKo && !hasKoTranslation && (
-            <TranslationNotice>
-              <NoticeTitle>{t("issues.translationNotReadyTitle")}</NoticeTitle>
-              <NoticeBody>{t("issues.translationNotReadyBody")}</NoticeBody>
-              <GhostAction type="button" onClick={() => setTab("ORIGINAL")}>
-                {t("issues.showOriginal")}
-              </GhostAction>
-            </TranslationNotice>
-          )}
+      <MetaCard>
+        <MetaGrid>
+          <MetaItem>
+            <MetaTerm>{t("issues.metaTechStack")}</MetaTerm>
+            <MetaDesc>{data.techStack.name}</MetaDesc>
+          </MetaItem>
+          <MetaItem>
+            <MetaTerm>{t("issues.metaCategory")}</MetaTerm>
+            <MetaDesc>{data.techStack.category}</MetaDesc>
+          </MetaItem>
+          <MetaItem>
+            <MetaTerm>{t("issues.metaUpdatedAt")}</MetaTerm>
+            <MetaDesc>{formatDate(data.githubUpdatedAt ?? data.githubCreatedAt, language)}</MetaDesc>
+          </MetaItem>
+        </MetaGrid>
 
-          {useKo ? <BodyKo>{body}</BodyKo> : <Body>{body}</Body>}
-        </MainCard>
-
-        <SideCard>
-          <SectionTitle>{t("issues.detailMetaTitle")}</SectionTitle>
-          <MetaList>
-            <MetaLabel>{t("issues.metaTechStack")}</MetaLabel>
-            <MetaValue>{data.techStack.name}</MetaValue>
-            <MetaLabel>{t("issues.metaCategory")}</MetaLabel>
-            <MetaValue>{data.techStack.category}</MetaValue>
-            <MetaLabel>{t("issues.metaUpdatedAt")}</MetaLabel>
-            <MetaValue>{formatDate(data.githubUpdatedAt ?? data.githubCreatedAt, language)}</MetaValue>
-          </MetaList>
-
-          <SectionTitle>{t("issues.detailLabelsTitle")}</SectionTitle>
-          <LabelRow>
-            {data.labels.map((label) => {
-              const style = getReadableLabelStyle(label.color);
-              return (
-                <Label
-                  key={`${data.id}-${label.name}`}
-                  $bg={style.bg}
-                  $fg={style.fg}
-                  $border={style.border}
-                >
-                  {label.name}
-                </Label>
-              );
-            })}
-          </LabelRow>
+        <MetaBottom>
+          <div>
+            <SectionTitle>{t("issues.detailLabelsTitle")}</SectionTitle>
+            <LabelRow>
+              {data.labels.map((label) => {
+                const style = getReadableLabelStyle(label.color);
+                return (
+                  <Label
+                    key={`${data.id}-${label.name}`}
+                    $bg={style.bg}
+                    $fg={style.fg}
+                    $border={style.border}
+                  >
+                    {label.name}
+                  </Label>
+                );
+              })}
+            </LabelRow>
+          </div>
           <ActionLink href={data.htmlUrl} target="_blank" rel="noreferrer">
             {t("issues.openGithub")}
           </ActionLink>
-        </SideCard>
-      </Grid>
+        </MetaBottom>
+      </MetaCard>
+
+      <ContentCard>
+        <TabRow>
+          <TabButton
+            type="button"
+            $active={tab === "KO"}
+            onClick={() => setTab("KO")}
+          >
+            {t("issues.showKorean")}
+          </TabButton>
+          <TabButton
+            type="button"
+            $active={tab === "ORIGINAL"}
+            onClick={() => setTab("ORIGINAL")}
+          >
+            {t("issues.showOriginal")}
+          </TabButton>
+        </TabRow>
+        {useKo && !hasKoTranslation && (
+          <TranslationNotice>
+            <NoticeTitle>{t("issues.translationNotReadyTitle")}</NoticeTitle>
+            <NoticeBody>{t("issues.translationNotReadyBody")}</NoticeBody>
+            <GhostAction type="button" onClick={() => setTab("ORIGINAL")}>
+              {t("issues.showOriginal")}
+            </GhostAction>
+          </TranslationNotice>
+        )}
+
+        {useKo ? (
+          <BodyKo>
+            <Markdown content={body} />
+          </BodyKo>
+        ) : (
+          <Body>
+            <Markdown content={body} />
+          </Body>
+        )}
+      </ContentCard>
     </PageWrap>
   );
 }
