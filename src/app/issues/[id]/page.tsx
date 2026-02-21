@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import { fetchIssueById } from "@/lib/api/relboard";
 import type { IssueResponse, Page } from "@/lib/api/types";
+import { getReadableLabelStyle } from "@/lib/utils/labelColor";
 
 const PageWrap = styled.section`
   display: grid;
@@ -165,15 +166,16 @@ const LabelRow = styled.div`
   gap: 8px;
 `;
 
-const Label = styled.span<{ $color?: string }>`
+const Label = styled.span<{ $bg?: string; $fg?: string; $border?: string }>`
   display: inline-flex;
   align-items: center;
   border-radius: ${({ theme }) => theme.radii.pill};
   padding: 3px 9px;
   font-size: ${({ theme }) => theme.fontSizes.xs};
   font-weight: 600;
-  color: #ffffff;
-  background: ${({ $color }) => $color ?? "#4b5563"};
+  color: ${({ $fg }) => $fg ?? "#ffffff"};
+  background: ${({ $bg }) => $bg ?? "#4b5563"};
+  border: 1px solid ${({ $border }) => $border ?? "rgba(255,255,255,0.22)"};
 `;
 
 const ActionLink = styled.a`
@@ -236,11 +238,6 @@ const StateMessage = styled.div`
   color: ${({ theme }) => theme.colors.muted};
   border: 1px solid ${({ theme }) => theme.colors.border};
 `;
-
-function toHexColor(input?: string | null) {
-  if (!input) return undefined;
-  return input.startsWith("#") ? input : `#${input}`;
-}
 
 function formatDate(value: string, locale: string) {
   const date = new Date(value);
@@ -359,11 +356,19 @@ export default function IssueDetailPage() {
 
           <SectionTitle>{t("issues.detailLabelsTitle")}</SectionTitle>
           <LabelRow>
-            {data.labels.map((label) => (
-              <Label key={`${data.id}-${label.name}`} $color={toHexColor(label.color)}>
-                {label.name}
-              </Label>
-            ))}
+            {data.labels.map((label) => {
+              const style = getReadableLabelStyle(label.color);
+              return (
+                <Label
+                  key={`${data.id}-${label.name}`}
+                  $bg={style.bg}
+                  $fg={style.fg}
+                  $border={style.border}
+                >
+                  {label.name}
+                </Label>
+              );
+            })}
           </LabelRow>
           <ActionLink href={data.htmlUrl} target="_blank" rel="noreferrer">
             {t("issues.openGithub")}
