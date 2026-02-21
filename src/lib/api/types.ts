@@ -23,6 +23,15 @@ export type Page<T> = {
 };
 
 export type TagType = "BREAKING" | "SECURITY" | "FEATURE" | "FIX" | "PERFORMANCE";
+export type IssueTagType =
+  | "BEGINNER_FRIENDLY"
+  | "HELP_WANTED"
+  | "BUG"
+  | "FEATURE"
+  | "DOCS"
+  | "SECURITY"
+  | "PERFORMANCE"
+  | "BREAKING";
 
 export type Category = string;
 
@@ -139,4 +148,33 @@ export type BookmarkResult = {
   bookmarked: boolean;
   created?: boolean;
   deleted?: boolean;
+};
+
+export type IssueLabel = {
+  name: string;
+  color?: string | null;
+  description?: string | null;
+};
+
+export type IssueResponse = {
+  id: string;
+  techStackId: string;
+  sourceId: string;
+  githubIssueId: string;
+  issueNumber: number;
+  title: string;
+  body?: string | null;
+  titleKo?: string | null;
+  bodySummaryKo?: string | null;
+  htmlUrl: string;
+  state: string;
+  commentCount: number;
+  authorLogin?: string | null;
+  githubCreatedAt: string;
+  githubUpdatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  techStack: TechStackResponse;
+  labels: IssueLabel[];
+  tags: Array<{ tagType: IssueTagType }>;
 };

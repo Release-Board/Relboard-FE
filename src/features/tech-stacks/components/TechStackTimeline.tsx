@@ -17,6 +17,7 @@ import ReleaseCardSkeleton from "@/features/releases/components/ReleaseCardSkele
 import TagFilter from "@/features/releases/components/TagFilter";
 import SubscribeButton from "@/features/subscriptions/components/SubscribeButton";
 import SearchBar from "@/features/releases/components/SearchBar";
+import TechStackIssuesList from "./TechStackIssuesList";
 
 const TimelineWrap = styled.section`
   display: grid;
@@ -64,6 +65,25 @@ const Sentinel = styled.div`
   height: 1px;
 `;
 
+const Tabs = styled.div`
+  display: inline-flex;
+  gap: 8px;
+`;
+
+const TabButton = styled.button<{ $active?: boolean }>`
+  border: 1px solid ${({ theme, $active }) =>
+    $active ? theme.colors.accentStrong : theme.colors.border};
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.surfaceRaised : theme.colors.surface};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.text : theme.colors.muted};
+  padding: 7px 12px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 700;
+  cursor: pointer;
+`;
+
 type Props = {
   techStackName: string;
 };
@@ -80,6 +100,7 @@ export default function TechStackTimeline({ techStackName }: Props) {
   const highlightId = highlightIdParam ? Number(highlightIdParam) : null;
   const highlightIdValid = Number.isFinite(highlightId ?? NaN);
   const keywordParam = searchParams.get("keyword") ?? "";
+  const activeTab = searchParams.get("tab") === "issues" ? "issues" : "releases";
 
   const { data: techStacks } = useQuery({
     queryKey: ["tech-stacks"],
@@ -123,6 +144,19 @@ export default function TechStackTimeline({ techStackName }: Props) {
         params.set("keyword", normalized);
       } else {
         params.delete("keyword");
+      }
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname);
+    },
+    [pathname, router, searchParams]
+  );
+
+  const handleTabChange = useCallback(
+    (nextTab: "releases" | "issues") => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", nextTab);
+      if (nextTab === "issues") {
+        params.delete("releaseId");
       }
       const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname);
@@ -180,39 +214,65 @@ export default function TechStackTimeline({ techStackName }: Props) {
           {currentStack && <SubscribeButton techStack={currentStack} />}
         </TitleRow>
         <Sub>{t("techStack.subtitle")}</Sub>
+        <Tabs>
+          <TabButton
+            type="button"
+            $active={activeTab === "releases"}
+            onClick={() => handleTabChange("releases")}
+          >
+            {t("techStack.tabReleases")}
+          </TabButton>
+          <TabButton
+            type="button"
+            $active={activeTab === "issues"}
+            onClick={() => handleTabChange("issues")}
+          >
+            {t("techStack.tabIssues")}
+          </TabButton>
+        </Tabs>
       </Heading>
 
-      <SearchRow>
-        <SearchBar keyword={keywordParam} onChange={handleKeywordChange} />
-      </SearchRow>
+      {activeTab === "releases" && (
+        <>
+          <SearchRow>
+            <SearchBar keyword={keywordParam} onChange={handleKeywordChange} />
+          </SearchRow>
 
-      <TagFilter value={tags} onChange={setTags} />
-
-      {isLoading &&
-        Array.from({ length: 4 }).map((_, index) => (
-          <ReleaseCardSkeleton key={`tech-skeleton-${index}`} />
-        ))}
-
-      {isError && <StateMessage>{t("techStack.loadError")}</StateMessage>}
-
-      {!isLoading && releases.length === 0 && (
-        <StateMessage>{t("techStack.empty")}</StateMessage>
+          <TagFilter value={tags} onChange={setTags} />
+        </>
       )}
 
-      {orderedReleases.map((release) => (
-        <ReleaseCard
-          key={release.id}
-          release={release}
-          highlighted={Boolean(highlightId && release.id === highlightId)}
-        />
-      ))}
+      {activeTab === "releases" && (
+        <>
+          {isLoading &&
+            Array.from({ length: 4 }).map((_, index) => (
+              <ReleaseCardSkeleton key={`tech-skeleton-${index}`} />
+            ))}
 
-      {isFetchingNextPage &&
-        Array.from({ length: 2 }).map((_, index) => (
-          <ReleaseCardSkeleton key={`tech-skeleton-next-${index}`} />
-        ))}
+          {isError && <StateMessage>{t("techStack.loadError")}</StateMessage>}
 
-      <Sentinel ref={sentinelRef} />
+          {!isLoading && releases.length === 0 && (
+            <StateMessage>{t("techStack.empty")}</StateMessage>
+          )}
+
+          {orderedReleases.map((release) => (
+            <ReleaseCard
+              key={release.id}
+              release={release}
+              highlighted={Boolean(highlightId && release.id === highlightId)}
+            />
+          ))}
+
+          {isFetchingNextPage &&
+            Array.from({ length: 2 }).map((_, index) => (
+              <ReleaseCardSkeleton key={`tech-skeleton-next-${index}`} />
+            ))}
+
+          <Sentinel ref={sentinelRef} />
+        </>
+      )}
+
+      {activeTab === "issues" && <TechStackIssuesList techStackName={techStackName} />}
     </TimelineWrap>
   );
 }

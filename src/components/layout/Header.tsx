@@ -9,12 +9,10 @@ import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import {
-  Bell,
   Bookmark,
   Flame,
   Home,
   Info,
-  Languages,
   MessageCircle,
   Moon,
   Sun,

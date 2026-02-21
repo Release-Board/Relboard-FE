@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import styled from "styled-components";
 import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import { API_BASE_URL } from "@/lib/api/client";
@@ -19,7 +20,7 @@ const Title = styled.h1`
   margin: 0;
 `;
 
-const KakaoButton = styled.a`
+const KakaoButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,15 +31,20 @@ const KakaoButton = styled.a`
   font-size: 16px;
   font-weight: 600;
   border-radius: 6px;
-  text-decoration: none;
   cursor: pointer;
+  border: none;
   
   &:hover {
     opacity: 0.9;
   }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
-const GithubButton = styled.a`
+const GithubButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,21 +55,31 @@ const GithubButton = styled.a`
   font-size: 16px;
   font-weight: 600;
   border-radius: 8px;
-  text-decoration: none;
   cursor: pointer;
   border: 1px solid #27272a;
 
   &:hover {
     border-color: #3f3f46;
   }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 export default function LoginPage() {
     const { t } = useStableTranslation();
+    const [redirecting, setRedirecting] = useState(false);
+
     const handleGithubLogin = () => {
+        if (redirecting) return;
+        setRedirecting(true);
         window.location.href = `${API_BASE_URL}/api/v1/auth/github/login`;
     };
     const handleLogin = () => {
+        if (redirecting) return;
+        setRedirecting(true);
         // Redirect to Backend OAuth endpoint which redirects to Kakao
         window.location.href = `${API_BASE_URL}/api/v1/auth/kakao/login`;
     };
@@ -71,10 +87,10 @@ export default function LoginPage() {
     return (
         <Container>
             <Title>{t("login.title")}</Title>
-            <GithubButton onClick={handleGithubLogin}>
+            <GithubButton type="button" onClick={handleGithubLogin} disabled={redirecting}>
                 {t("login.github")}
             </GithubButton>
-            <KakaoButton onClick={handleLogin}>
+            <KakaoButton type="button" onClick={handleLogin} disabled={redirecting}>
                 {t("login.kakao")}
             </KakaoButton>
         </Container>

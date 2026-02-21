@@ -7,6 +7,8 @@ import type {
   CommentDeleteResult,
   CommentResponse,
   CommentUpdateResult,
+  IssueResponse,
+  IssueTagType,
   Page,
   ReleaseResponse,
   SubscriptionResult,
@@ -26,6 +28,15 @@ export type ReleaseListParams = {
 export type BookmarkListParams = {
   page?: number;
   size?: number;
+};
+
+export type IssueListParams = {
+  page?: number;
+  size?: number;
+  techStackId?: number;
+  categories?: string[];
+  tags?: IssueTagType[];
+  labels?: string[];
 };
 
 function buildQuery(params: Record<string, string | number | undefined | Array<string>>) {
@@ -230,6 +241,43 @@ export async function fetchReleaseById(releaseId: number) {
   }
 
   return response.data;
+}
+
+export async function fetchIssues(params: IssueListParams) {
+  const query = buildQuery(
+    params as unknown as Record<string, string | number | undefined | Array<string>>
+  );
+  const response = await fetchJson<CommonApiResponse<Page<IssueResponse>>>(
+    `/api/v1/issues${query}`
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to fetch issues");
+  }
+
+  return response.data;
+}
+
+export async function fetchTechStackIssues(techStackName: string, params: IssueListParams) {
+  const query = buildQuery(
+    params as unknown as Record<string, string | number | undefined | Array<string>>
+  );
+  const response = await fetchJson<CommonApiResponse<Page<IssueResponse>>>(
+    `/api/v1/tech-stacks/${techStackName}/issues${query}`
+  );
+
+  if (!response.success) {
+    throw new Error(response.error?.message ?? "Failed to fetch issues");
+  }
+
+  return response.data;
+}
+
+export async function fetchIssueById(issueId: string) {
+  const response = await fetchJson<CommonApiResponse<IssueResponse> | IssueResponse>(
+    `/api/v1/issues/${issueId}`
+  );
+  return unwrapResponse<IssueResponse>(response, "Failed to fetch issue detail");
 }
 
 export function trackReleaseView(releaseId: number) {
