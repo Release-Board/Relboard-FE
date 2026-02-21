@@ -35,9 +35,38 @@ export type IssueListParams = {
   size?: number;
   techStackId?: number;
   categories?: string[];
+  q?: string;
+  sort?: "latest" | "trending" | "impact";
+  direction?: "asc" | "desc";
   tags?: IssueTagType[];
   labels?: string[];
 };
+
+function normalizeIssuePage(page: Page<IssueResponse> & { page?: number; hasNext?: boolean }) {
+  const currentPage =
+    typeof page.number === "number"
+      ? page.number
+      : typeof page.page === "number"
+        ? page.page
+        : page.pageable?.pageNumber ?? 0;
+
+  const pageSize =
+    typeof page.size === "number" ? page.size : page.pageable?.pageSize ?? 20;
+
+  const totalPages =
+    typeof page.totalPages === "number"
+      ? page.totalPages
+      : Math.max(1, Math.ceil((page.totalElements ?? 0) / Math.max(1, pageSize)));
+
+  return {
+    ...page,
+    number: currentPage,
+    size: pageSize,
+    totalPages,
+    hasNext:
+      typeof page.hasNext === "boolean" ? page.hasNext : currentPage + 1 < totalPages,
+  };
+}
 
 function buildQuery(params: Record<string, string | number | undefined | Array<string>>) {
   const searchParams = new URLSearchParams();
@@ -255,7 +284,7 @@ export async function fetchIssues(params: IssueListParams) {
     throw new Error(response.error?.message ?? "Failed to fetch issues");
   }
 
-  return response.data;
+  return normalizeIssuePage(response.data as Page<IssueResponse> & { page?: number; hasNext?: boolean });
 }
 
 export async function fetchTechStackIssues(techStackName: string, params: IssueListParams) {
@@ -270,7 +299,7 @@ export async function fetchTechStackIssues(techStackName: string, params: IssueL
     throw new Error(response.error?.message ?? "Failed to fetch issues");
   }
 
-  return response.data;
+  return normalizeIssuePage(response.data as Page<IssueResponse> & { page?: number; hasNext?: boolean });
 }
 
 export async function fetchIssueById(issueId: string) {

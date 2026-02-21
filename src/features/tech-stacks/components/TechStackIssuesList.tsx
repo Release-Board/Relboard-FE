@@ -96,16 +96,18 @@ const BadgeRow = styled.div`
   flex-wrap: wrap;
 `;
 
-const Badge = styled.span`
+const Badge = styled.span<{ $state?: string }>`
   display: inline-flex;
   align-items: center;
   border-radius: ${({ theme }) => theme.radii.pill};
   padding: 4px 9px;
   font-size: ${({ theme }) => theme.fontSizes.xs};
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: ${({ $state }) => ($state === "closed" ? "#f87171" : "#10b981")};
+  background: ${({ $state }) =>
+    $state === "closed" ? "rgba(248, 113, 113, 0.12)" : "rgba(16, 185, 129, 0.12)"};
+  border: 1px solid
+    ${({ $state }) => ($state === "closed" ? "rgba(248, 113, 113, 0.35)" : "rgba(16, 185, 129, 0.35)")};
 `;
 
 const AiBadge = styled(Badge)`
@@ -171,7 +173,10 @@ export default function TechStackIssuesList({ techStackName }: { techStackName: 
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
-      const nextPage = lastPage.number + 1;
+      const nextPage = (lastPage.page ?? lastPage.number ?? 0) + 1;
+      if (typeof lastPage.hasNext === "boolean") {
+        return lastPage.hasNext ? nextPage : undefined;
+      }
       return nextPage < lastPage.totalPages ? nextPage : undefined;
     },
   });
@@ -241,8 +246,13 @@ export default function TechStackIssuesList({ techStackName }: { techStackName: 
               </Row>
 
               <BadgeRow>
-                <Badge>{t("issues.stateOpen")}</Badge>
-                {(issue.titleKo || issue.bodySummaryKo) && (
+                <Badge $state={issue.state?.toLowerCase()}>
+                  {(issue.state ?? "").toUpperCase() || t("issues.stateOpen")}
+                </Badge>
+                {(issue.translation?.titleKoReady ||
+                  issue.translation?.summaryKoReady ||
+                  issue.titleKo ||
+                  issue.bodySummaryKo) && (
                   <AiBadge>{t("issues.aiTranslated")}</AiBadge>
                 )}
               </BadgeRow>

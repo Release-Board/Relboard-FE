@@ -12,6 +12,8 @@ export type ApiError = {
 
 export type Page<T> = {
   content: T[];
+  page?: number;
+  hasNext?: boolean;
   pageable?: {
     pageNumber: number;
     pageSize: number;
@@ -176,5 +178,9 @@ export type IssueResponse = {
   updatedAt: string;
   techStack: TechStackResponse;
   labels: IssueLabel[];
-  tags: Array<{ tagType: IssueTagType }>;
+  tags: Array<{ tagType: IssueTagType }> | IssueTagType[];
+  translation?: {
+    titleKoReady?: boolean;
+    summaryKoReady?: boolean;
+  } | null;
 };
