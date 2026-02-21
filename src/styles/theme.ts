@@ -1,27 +1,18 @@
 export const darkTheme = {
   colors: {
-    // Background Colors
-    background: "#000000",      // Pure Black (메인 배경)
-    surface: "#0a0a0a",         // 카드/패널 배경
-    surfaceRaised: "#1a1a1a",   // Hover, Active 상태 배경
-    elevated: "#222222",        // 모달, 드롭다운 배경
-
-    // Text Colors
-    text: "#ffffff",            // 메인 텍스트
-    textSecondary: "#a1a1aa",   // 서브 텍스트, 설명
-    muted: "#71717a",           // 더 연한 보조 텍스트
-
-    // Accent Colors (Green)
-    accent: "#10b981",          // Primary Green
-    accentStrong: "#059669",    // Accent Hover
-
-    // Border & Divider
-    border: "#27272a",          // 카드 테두리, 구분선
-    borderHover: "#3f3f46",     // Hover 시 테두리
-
-    // Tags & Badges
-    tagBg: "#27272a",
-    tagText: "#d4d4d8",
+    background: "#070b14",
+    surface: "#0d1321",
+    surfaceRaised: "#111a2a",
+    elevated: "#141f33",
+    text: "#e5e7eb",
+    textSecondary: "#a6b0c3",
+    muted: "#76839b",
+    accent: "#4f8cff",
+    accentStrong: "#6da2ff",
+    border: "#233047",
+    borderHover: "#33476b",
+    tagBg: "#1b2a43",
+    tagText: "#d8e4ff",
     badgeBreakingBg: "#dc2626",
     badgeBreakingText: "#ffffff",
   },
