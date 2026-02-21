@@ -24,6 +24,7 @@ import { useThemeStore } from "@/lib/store/themeStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
 import { trackEvent } from "@/lib/analytics/ga";
 import { useContactStore } from "@/lib/store/contactStore";
+import { useIsHydrated } from "@/lib/hooks/useIsHydrated";
 
 const HeaderWrap = styled.header`
   height: 64px;
@@ -400,7 +401,7 @@ type HeaderProps = {
 
 export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }: HeaderProps) {
   const { user, isInitialized } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsHydrated();
   const [searchKeyword, setSearchKeyword] = useState("");
   const pathname = usePathname();
   const router = useRouter();
@@ -423,10 +424,6 @@ export default function Header({ menuButton, mobileMenuOpen, onMobileMenuClose }
       onMobileMenuClose?.();
     }
   };
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleLogout = async () => {
     try {

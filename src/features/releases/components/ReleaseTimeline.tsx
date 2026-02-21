@@ -37,20 +37,12 @@ const Sentinel = styled.div`
 
 export default function ReleaseTimeline() {
   const [tags, setTags] = useState<TagType[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const searchParams = useSearchParams();
   const { t } = useStableTranslation();
   const categoryParam = searchParams.get("category");
   const keywordParam = searchParams.get("keyword") ?? "";
-
-  useEffect(() => {
-    if (categoryParam) {
-      setCategories([categoryParam]);
-    } else {
-      setCategories([]);
-    }
-  }, [categoryParam]);
+  const categories = useMemo(() => (categoryParam ? [categoryParam] : []), [categoryParam]);
 
   const releasesQuery = useInfiniteQuery({
     queryKey: ["releases", tags, categories, keywordParam],
@@ -89,7 +81,7 @@ export default function ReleaseTimeline() {
     <TimelineWrap>
       <Controls>
         <TrendingSection />
-        <CategoryFilter value={categories} onChange={setCategories} />
+        <CategoryFilter value={categories} onChange={() => {}} />
         <TagFilter value={tags} onChange={setTags} />
       </Controls>
 

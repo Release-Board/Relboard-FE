@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import styled from "styled-components";
 import { createPortal } from "react-dom";
+import { useIsHydrated } from "@/lib/hooks/useIsHydrated";
 
 const Overlay = styled.div`
   position: fixed;
@@ -80,11 +81,7 @@ export default function Modal({
   actionsAlign = "end",
   children,
 }: Props) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsHydrated();
 
   useEffect(() => {
     if (!open) return;

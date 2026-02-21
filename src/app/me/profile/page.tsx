@@ -266,38 +266,40 @@ export default function ProfilePage() {
     enabled: Boolean(user),
   });
 
-  const [nickname, setNickname] = useState("");
-  const [email, setEmail] = useState("");
-  const [bio, setBio] = useState("");
-  const [githubUrl, setGithubUrl] = useState("");
-  const [websiteUrl, setWebsiteUrl] = useState("");
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [profileImageType, setProfileImageType] = useState<"URL" | "DEFAULT" | "FILE">(
-    "DEFAULT"
+  const [nicknameDraft, setNicknameDraft] = useState<string | undefined>(undefined);
+  const [emailDraft, setEmailDraft] = useState<string | undefined>(undefined);
+  const [bioDraft, setBioDraft] = useState<string | undefined>(undefined);
+  const [githubUrlDraft, setGithubUrlDraft] = useState<string | undefined>(undefined);
+  const [websiteUrlDraft, setWebsiteUrlDraft] = useState<string | undefined>(undefined);
+  const [profileImageUrlDraft, setProfileImageUrlDraft] = useState<string | null | undefined>(
+    undefined
   );
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [profileImageTypeDraft, setProfileImageTypeDraft] = useState<
+    "URL" | "DEFAULT" | "FILE" | undefined
+  >(undefined);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingDelete, setPendingDelete] = useState(false);
 
-  useEffect(() => {
-    if (!data) return;
-    setNickname(data.nickname ?? "");
-    setEmail(data.email ?? "");
-    setBio(data.bio ?? "");
-    setGithubUrl(data.githubUrl ?? "");
-    setWebsiteUrl(data.websiteUrl ?? "");
-    setProfileImageUrl(data.profileImageUrl ?? null);
-    setPreviewUrl(null);
-    setProfileImageType((data.profileImageType ?? "DEFAULT") as "URL" | "DEFAULT" | "FILE");
-    setPendingFile(null);
-    setPendingDelete(false);
-  }, [data]);
+  const savedProfileImageType = (data?.profileImageType ?? "DEFAULT") as
+    | "URL"
+    | "DEFAULT"
+    | "FILE";
+  const nickname = nicknameDraft ?? (data?.nickname ?? "");
+  const email = emailDraft ?? (data?.email ?? "");
+  const bio = bioDraft ?? (data?.bio ?? "");
+  const githubUrl = githubUrlDraft ?? (data?.githubUrl ?? "");
+  const websiteUrl = websiteUrlDraft ?? (data?.websiteUrl ?? "");
+  const profileImageUrl = profileImageUrlDraft === undefined
+    ? (data?.profileImageUrl ?? null)
+    : profileImageUrlDraft;
+  const profileImageType = profileImageTypeDraft ?? savedProfileImageType;
 
   const uploadMutation = useMutation({
     mutationFn: uploadProfileImage,
     onSuccess: (result) => {
-      setProfileImageUrl(result.profileImageUrl);
-      setProfileImageType("FILE");
+      setProfileImageUrlDraft(result.profileImageUrl);
+      setProfileImageTypeDraft("FILE");
     },
     onError: () => toast(t("profile.uploadError"), { tone: "error" }),
   });
@@ -305,8 +307,8 @@ export default function ProfilePage() {
   const deleteImageMutation = useMutation({
     mutationFn: deleteProfileImage,
     onSuccess: () => {
-      setProfileImageUrl(null);
-      setProfileImageType("DEFAULT");
+      setProfileImageUrlDraft(null);
+      setProfileImageTypeDraft("DEFAULT");
     },
     onError: () => toast(t("profile.deleteImageError"), { tone: "error" }),
   });
@@ -319,6 +321,13 @@ export default function ProfilePage() {
       if (updated.data) {
         setUser(updated.data);
       }
+      setNicknameDraft(undefined);
+      setEmailDraft(undefined);
+      setBioDraft(undefined);
+      setGithubUrlDraft(undefined);
+      setWebsiteUrlDraft(undefined);
+      setProfileImageUrlDraft(undefined);
+      setProfileImageTypeDraft(undefined);
       setPreviewUrl(null);
       setPendingFile(null);
       setPendingDelete(false);
@@ -345,6 +354,13 @@ export default function ProfilePage() {
     return false;
   }, [
     data,
+    nicknameDraft,
+    emailDraft,
+    bioDraft,
+    githubUrlDraft,
+    websiteUrlDraft,
+    profileImageUrlDraft,
+    profileImageTypeDraft,
     nickname,
     email,
     bio,
@@ -492,7 +508,7 @@ export default function ProfilePage() {
                 type="button"
                 $active={profileImageType === "FILE"}
                 onClick={() => {
-                  setProfileImageType("FILE");
+                  setProfileImageTypeDraft("FILE");
                   setPendingDelete(false);
                 }}
               >
@@ -502,9 +518,9 @@ export default function ProfilePage() {
                 type="button"
                 $active={profileImageType === "URL"}
                 onClick={() => {
-                  setProfileImageType("URL");
+                  setProfileImageTypeDraft("URL");
                   if (!profileImageUrl) {
-                    setProfileImageUrl("");
+                    setProfileImageUrlDraft("");
                   }
                   setPendingFile(null);
                   setPendingDelete(false);
@@ -517,8 +533,8 @@ export default function ProfilePage() {
                 type="button"
                 $active={profileImageType === "DEFAULT"}
                 onClick={() => {
-                  setProfileImageType("DEFAULT");
-                  setProfileImageUrl(null);
+                  setProfileImageTypeDraft("DEFAULT");
+                  setProfileImageUrlDraft(null);
                   setPendingFile(null);
                   setPendingDelete(true);
                   setPreviewUrl(null);
@@ -537,7 +553,7 @@ export default function ProfilePage() {
                   if (file) {
                     setPendingFile(file);
                     setPendingDelete(false);
-                    setProfileImageType("FILE");
+                    setProfileImageTypeDraft("FILE");
                     setPreviewUrl(URL.createObjectURL(file));
                   }
                 }}
@@ -570,7 +586,7 @@ export default function ProfilePage() {
                   value={profileImageUrl ?? ""}
                   placeholder="https://"
                   onChange={(event) => {
-                    setProfileImageUrl(event.target.value);
+                    setProfileImageUrlDraft(event.target.value);
                   }}
                 />
               </Field>
@@ -584,28 +600,28 @@ export default function ProfilePage() {
               {t("profile.nickname")}
               {isNicknameDirty && <DirtyDot />}
             </FieldLabel>
-            <Input value={nickname} onChange={(event) => setNickname(event.target.value)} />
+            <Input value={nickname} onChange={(event) => setNicknameDraft(event.target.value)} />
           </Field>
           <Field>
             <FieldLabel>
               {t("profile.email")}
               {isEmailDirty && <DirtyDot />}
             </FieldLabel>
-            <Input value={email} onChange={(event) => setEmail(event.target.value)} />
+            <Input value={email} onChange={(event) => setEmailDraft(event.target.value)} />
           </Field>
           <Field>
             <FieldLabel>
               {t("profile.githubUrl")}
               {isGithubDirty && <DirtyDot />}
             </FieldLabel>
-            <Input value={githubUrl} onChange={(event) => setGithubUrl(event.target.value)} />
+            <Input value={githubUrl} onChange={(event) => setGithubUrlDraft(event.target.value)} />
           </Field>
           <Field>
             <FieldLabel>
               {t("profile.websiteUrl")}
               {isWebsiteDirty && <DirtyDot />}
             </FieldLabel>
-            <Input value={websiteUrl} onChange={(event) => setWebsiteUrl(event.target.value)} />
+            <Input value={websiteUrl} onChange={(event) => setWebsiteUrlDraft(event.target.value)} />
           </Field>
         </Grid>
 
@@ -614,7 +630,7 @@ export default function ProfilePage() {
             {t("profile.bio")}
             {isBioDirty && <DirtyDot />}
           </FieldLabel>
-          <Textarea value={bio} onChange={(event) => setBio(event.target.value)} />
+          <Textarea value={bio} onChange={(event) => setBioDraft(event.target.value)} />
         </Field>
 
         <UnsavedRow>
