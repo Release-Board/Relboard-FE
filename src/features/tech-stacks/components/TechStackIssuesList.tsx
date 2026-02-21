@@ -44,6 +44,21 @@ const ToggleButton = styled.button`
   cursor: pointer;
 `;
 
+const SearchInput = styled.input`
+  min-width: 220px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  padding: 6px 10px;
+  outline: none;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.accentStrong};
+  }
+`;
+
 const StateMessage = styled.div`
   padding: 24px;
   border-radius: ${({ theme }) => theme.radii.md};
@@ -160,16 +175,26 @@ export default function TechStackIssuesList({ techStackName }: { techStackName: 
   const { t, language } = useStableTranslation();
   const [selectedTag, setSelectedTag] = useState<IssueTagType | null>(null);
   const [showKorean, setShowKorean] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const tags = useMemo(() => (selectedTag ? [selectedTag] : undefined), [selectedTag]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setSearchKeyword(searchInput.trim());
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
+
   const issuesQuery = useInfiniteQuery({
-    queryKey: ["tech-stack-issues", techStackName, selectedTag],
+    queryKey: ["tech-stack-issues", techStackName, selectedTag, searchKeyword],
     queryFn: ({ pageParam = 0 }) =>
       fetchTechStackIssues(techStackName, {
         page: pageParam,
         size: 20,
         tags,
+        q: searchKeyword || undefined,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
@@ -222,6 +247,11 @@ export default function TechStackIssuesList({ techStackName }: { techStackName: 
         >
           {t("issues.filterHelpWanted")}
         </FilterButton>
+        <SearchInput
+          value={searchInput}
+          onChange={(event) => setSearchInput(event.target.value)}
+          placeholder={language === "ko" ? "이슈 검색" : "Search issues"}
+        />
         <ToggleButton type="button" onClick={() => setShowKorean((prev) => !prev)}>
           {showKorean ? t("issues.showOriginal") : t("issues.showKorean")}
         </ToggleButton>

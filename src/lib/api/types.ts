@@ -166,6 +166,7 @@ export type IssueResponse = {
   issueNumber: number;
   title: string;
   body?: string | null;
+  bodyKo?: string | null;
   titleKo?: string | null;
   bodySummaryKo?: string | null;
   htmlUrl: string;
@@ -182,5 +183,6 @@ export type IssueResponse = {
   translation?: {
     titleKoReady?: boolean;
     summaryKoReady?: boolean;
+    bodyKoReady?: boolean;
   } | null;
 };

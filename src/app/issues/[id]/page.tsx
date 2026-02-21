@@ -298,9 +298,16 @@ export default function IssueDetailPage() {
   const title = useKo
     ? data.titleKo ?? t("issues.translationTitlePending")
     : data.title;
-  const hasKoTranslation = Boolean(data.titleKo || data.bodySummaryKo);
+  const hasKoTranslation = Boolean(
+    data.translation?.titleKoReady ||
+    data.translation?.summaryKoReady ||
+    data.translation?.bodyKoReady ||
+    data.titleKo ||
+    data.bodySummaryKo ||
+    data.bodyKo
+  );
   const body = useKo
-    ? data.bodySummaryKo ?? t("issues.translationBodyPending")
+    ? data.bodyKo ?? data.bodySummaryKo ?? t("issues.translationBodyPending")
     : data.body ?? data.bodySummaryKo ?? t("issues.noContent");
 
   return (
@@ -308,7 +315,12 @@ export default function IssueDetailPage() {
       <HeroCard>
         <BadgeRow>
           <Badge>{(data.state ?? "OPEN").toUpperCase()}</Badge>
-          {(data.titleKo || data.bodySummaryKo) && <AiBadge>{t("issues.aiTranslated")}</AiBadge>}
+          {(data.translation?.titleKoReady ||
+            data.translation?.summaryKoReady ||
+            data.translation?.bodyKoReady ||
+            data.titleKo ||
+            data.bodySummaryKo ||
+            data.bodyKo) && <AiBadge>{t("issues.aiTranslated")}</AiBadge>}
           <Badge>{data.techStack.name}</Badge>
         </BadgeRow>
         <Title>{title}</Title>
