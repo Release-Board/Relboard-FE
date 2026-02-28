@@ -215,6 +215,26 @@ export async function fetchMyBookmarks() {
   return unwrapResponse<Page<ReleaseResponse>>(response, "Failed to fetch bookmarks");
 }
 
+export async function addIssueBookmark(issueId: string) {
+  const response = await fetchJson<CommonApiResponse<BookmarkResult> | BookmarkResult>(
+    `/api/v1/issues/${issueId}/bookmark`,
+    {
+      method: "POST",
+    }
+  );
+  return unwrapResponse<BookmarkResult>(response, "Failed to add issue bookmark");
+}
+
+export async function removeIssueBookmark(issueId: string) {
+  const response = await fetchJson<CommonApiResponse<BookmarkResult> | BookmarkResult>(
+    `/api/v1/issues/${issueId}/bookmark`,
+    {
+      method: "DELETE",
+    }
+  );
+  return unwrapResponse<BookmarkResult>(response, "Failed to remove issue bookmark");
+}
+
 export async function fetchMyBookmarksPage(params: BookmarkListParams) {
   const query = buildQuery(
     params as unknown as Record<string, string | number | undefined | Array<string>>
@@ -240,6 +260,33 @@ export async function fetchMyBookmarksPage(params: BookmarkListParams) {
   }
 
   return data;
+}
+
+export async function fetchMyIssueBookmarksPage(params: BookmarkListParams) {
+  const query = buildQuery(
+    params as unknown as Record<string, string | number | undefined | Array<string>>
+  );
+  const response = await fetchJson<
+    CommonApiResponse<Page<IssueResponse>> | Page<IssueResponse> | IssueResponse[]
+  >(
+    `/api/v1/users/me/bookmarks/issues${query}`
+  );
+  const data = unwrapResponse<Page<IssueResponse> | IssueResponse[]>(
+    response,
+    "Failed to fetch issue bookmarks"
+  );
+
+  if (Array.isArray(data)) {
+    return {
+      content: data,
+      totalElements: data.length,
+      totalPages: 1,
+      number: 0,
+      size: data.length,
+    };
+  }
+
+  return normalizeIssuePage(data as Page<IssueResponse> & { page?: number; hasNext?: boolean });
 }
 
 export async function fetchTrendingReleases(params: {

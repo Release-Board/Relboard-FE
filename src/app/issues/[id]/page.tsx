@@ -9,6 +9,7 @@ import { fetchIssueById } from "@/lib/api/relboard";
 import type { IssueResponse, Page } from "@/lib/api/types";
 import { getReadableLabelStyle } from "@/lib/utils/labelColor";
 import Markdown from "@/components/Markdown";
+import IssueBookmarkButton from "@/features/bookmarks/components/IssueBookmarkButton";
 
 const PageWrap = styled.section`
   display: grid;
@@ -53,6 +54,13 @@ const Title = styled.h1`
   color: ${({ theme }) => theme.colors.text};
   overflow-wrap: anywhere;
   word-break: break-word;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 `;
 
 const Meta = styled.div`
@@ -323,7 +331,10 @@ export default function IssueDetailPage() {
             data.bodyKo) && <AiBadge>{t("issues.aiTranslated")}</AiBadge>}
           <Badge>{data.techStack.name}</Badge>
         </BadgeRow>
-        <Title>{title}</Title>
+        <TitleRow>
+          <Title>{title}</Title>
+          <IssueBookmarkButton issueId={data.id} />
+        </TitleRow>
         <Meta>
           <span>#{data.issueNumber}</span>
           <span>{data.authorLogin ?? "-"}</span>
