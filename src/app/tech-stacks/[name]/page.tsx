@@ -1,5 +1,7 @@
 import TechStackTimeline from "@/features/tech-stacks/components/TechStackTimeline";
 
+export const revalidate = 3600;
+
 type Props = {
   params: Promise<{ name: string }>;
 };
