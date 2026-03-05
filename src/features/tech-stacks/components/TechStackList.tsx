@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import styled from "styled-components";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -87,6 +87,17 @@ const StateMessage = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
+const SortSelect = styled.select`
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  cursor: pointer;
+  width: fit-content;
+`;
+
 function formatDate(value?: string | null, locale?: string) {
   if (!value) return "-";
   const date = new Date(value);
@@ -118,10 +129,11 @@ export default function TechStackList() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   const keywordParam = searchParams.get("keyword") ?? "";
+  const [sort, setSort] = useState<"name" | "latest">("name");
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["tech-stacks"],
-    queryFn: fetchTechStacks,
+    queryKey: ["tech-stacks", sort],
+    queryFn: () => fetchTechStacks({ sort }),
   });
 
   const stacks = useMemo(
@@ -131,6 +143,15 @@ export default function TechStackList() {
 
   return (
     <Section>
+      <SortSelect
+        value={sort}
+        onChange={(e) => setSort(e.target.value as "name" | "latest")}
+        aria-label={t("techStackList.sortLabel")}
+      >
+        <option value="name">{t("techStackList.sortName")}</option>
+        <option value="latest">{t("techStackList.sortLatest")}</option>
+      </SortSelect>
+
       {isLoading && <StateMessage>{t("techStackList.loading")}</StateMessage>}
       {isError && <StateMessage>{t("techStackList.error")}</StateMessage>}
       {!isLoading && !isError && stacks.length === 0 && (

@@ -120,7 +120,7 @@ export default function TechStackSidebar() {
 
   const { data: techStacks } = useQuery({
     queryKey: ["tech-stacks"],
-    queryFn: fetchTechStacks,
+    queryFn: () => fetchTechStacks(),
   });
 
   const subscriptionsEnabled = Boolean(isInitialized && user && accessToken);
