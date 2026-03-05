@@ -46,6 +46,9 @@ const resources = {
       releaseTimeline: {
         loadError: "데이터를 불러오지 못했습니다.",
         empty: "표시할 릴리즈가 없습니다.",
+        sortLabel: "버전 정렬",
+        sortNewest: "최신 버전순",
+        sortOldest: "이전 버전순",
       },
       techStack: {
         subtitle: "해당 스택의 최신 릴리즈 히스토리를 확인하세요.",
@@ -59,6 +62,9 @@ const resources = {
         error: "기술 스택을 불러오지 못했습니다.",
         empty: "표시할 기술 스택이 없습니다.",
         latest: "최신 {{version}} · {{date}}",
+        sortLabel: "정렬",
+        sortName: "이름순",
+        sortLatest: "최신 릴리즈순",
       },
       bookmarks: {
         title: "북마크",
@@ -192,6 +198,9 @@ const resources = {
         filterAll: "전체",
         filterBeginner: "Good First Issue",
         filterHelpWanted: "Help Wanted",
+        sortLabel: "정렬",
+        sortLatest: "최신순",
+        sortOldest: "오래된순",
         stateOpen: "OPEN",
         aiTranslated: "AI 번역",
         showOriginal: "원문 보기",
@@ -330,6 +339,9 @@ const resources = {
       releaseTimeline: {
         loadError: "Failed to load releases.",
         empty: "No releases to display.",
+        sortLabel: "Sort by version",
+        sortNewest: "Newest",
+        sortOldest: "Oldest",
       },
       techStack: {
         subtitle: "Check the latest release history for this stack.",
@@ -343,6 +355,9 @@ const resources = {
         error: "Failed to load tech stacks.",
         empty: "No tech stacks to display.",
         latest: "Latest {{version}} · {{date}}",
+        sortLabel: "Sort",
+        sortName: "A–Z",
+        sortLatest: "Latest release",
       },
       bookmarks: {
         title: "Bookmarks",
@@ -476,6 +491,9 @@ const resources = {
         filterAll: "All",
         filterBeginner: "Good First Issue",
         filterHelpWanted: "Help Wanted",
+        sortLabel: "Sort",
+        sortLatest: "Latest",
+        sortOldest: "Oldest",
         stateOpen: "OPEN",
         aiTranslated: "AI translated",
         showOriginal: "Show original",
