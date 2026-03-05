@@ -336,7 +336,15 @@ export default function MyBookmarksPage() {
   const issueCurrentPage = issuePageInfo?.number ?? issuePage;
 
   const sortedReleaseBookmarks = useMemo(() => {
-    if (releaseSort === "bookmarked") return bookmarks;
+    if (releaseSort === "bookmarked") {
+      const hasBookmarkedAt = bookmarks.some((item) => Boolean(item.bookmarkedAt));
+      if (!hasBookmarkedAt) return bookmarks;
+      return [...bookmarks].sort((a, b) => {
+        const aTime = new Date(a.bookmarkedAt ?? 0).getTime();
+        const bTime = new Date(b.bookmarkedAt ?? 0).getTime();
+        return bTime - aTime;
+      });
+    }
     const sorted = [...bookmarks].sort((a, b) => {
       const aTime = new Date(a.publishedAt).getTime();
       const bTime = new Date(b.publishedAt).getTime();
@@ -346,7 +354,15 @@ export default function MyBookmarksPage() {
   }, [bookmarks, releaseSort]);
 
   const sortedIssueBookmarks = useMemo(() => {
-    if (issueSort === "bookmarked") return issueBookmarks;
+    if (issueSort === "bookmarked") {
+      const hasBookmarkedAt = issueBookmarks.some((item) => Boolean(item.bookmarkedAt));
+      if (!hasBookmarkedAt) return issueBookmarks;
+      return [...issueBookmarks].sort((a, b) => {
+        const aTime = new Date(a.bookmarkedAt ?? 0).getTime();
+        const bTime = new Date(b.bookmarkedAt ?? 0).getTime();
+        return bTime - aTime;
+      });
+    }
     const sorted = [...issueBookmarks].sort((a, b) => {
       const aTime = new Date(a.githubUpdatedAt ?? a.githubCreatedAt).getTime();
       const bTime = new Date(b.githubUpdatedAt ?? b.githubCreatedAt).getTime();
