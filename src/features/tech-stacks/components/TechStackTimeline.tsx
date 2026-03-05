@@ -70,6 +70,26 @@ const Tabs = styled.div`
   gap: 8px;
 `;
 
+const FilterControlRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const SortSelect = styled.select`
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  cursor: pointer;
+  width: fit-content;
+  flex-shrink: 0;
+`;
+
 const TabButton = styled.button<{ $active?: boolean }>`
   border: 1px solid ${({ theme, $active }) =>
     $active ? theme.colors.accentStrong : theme.colors.border};
@@ -90,6 +110,7 @@ type Props = {
 
 export default function TechStackTimeline({ techStackName }: Props) {
   const [tags, setTags] = useState<TagType[]>([]);
+  const [direction, setDirection] = useState<"asc" | "desc">("desc");
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolledRef = useRef(false);
   const { t } = useStableTranslation();
@@ -104,7 +125,7 @@ export default function TechStackTimeline({ techStackName }: Props) {
 
   const { data: techStacks } = useQuery({
     queryKey: ["tech-stacks"],
-    queryFn: fetchTechStacks,
+    queryFn: () => fetchTechStacks(),
   });
 
   const currentStack = useMemo(
@@ -113,13 +134,14 @@ export default function TechStackTimeline({ techStackName }: Props) {
   );
 
   const releasesQuery = useInfiniteQuery({
-    queryKey: ["tech-stack-releases", techStackName, tags, keywordParam],
+    queryKey: ["tech-stack-releases", techStackName, tags, keywordParam, direction],
     queryFn: ({ pageParam = 0 }) =>
       fetchTechStackReleases(techStackName, {
         page: pageParam,
         size: 20,
         tags,
         keyword: keywordParam || undefined,
+        direction,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
@@ -238,7 +260,17 @@ export default function TechStackTimeline({ techStackName }: Props) {
             <SearchBar keyword={keywordParam} onChange={handleKeywordChange} />
           </SearchRow>
 
-          <TagFilter value={tags} onChange={setTags} />
+          <FilterControlRow>
+            <TagFilter value={tags} onChange={setTags} />
+            <SortSelect
+              value={direction}
+              onChange={(e) => setDirection(e.target.value as "asc" | "desc")}
+              aria-label={t("releaseTimeline.sortLabel")}
+            >
+              <option value="desc">{t("releaseTimeline.sortNewest")}</option>
+              <option value="asc">{t("releaseTimeline.sortOldest")}</option>
+            </SortSelect>
+          </FilterControlRow>
         </>
       )}
 

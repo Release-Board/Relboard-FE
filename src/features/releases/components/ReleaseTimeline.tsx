@@ -23,6 +23,18 @@ const Controls = styled.div`
   display: none;
 `;
 
+const SortSelect = styled.select`
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  cursor: pointer;
+  width: fit-content;
+  align-self: flex-start;
+`;
+
 const StateMessage = styled.div`
   padding: 24px;
   border-radius: ${({ theme }) => theme.radii.md};
@@ -37,6 +49,7 @@ const Sentinel = styled.div`
 
 export default function ReleaseTimeline() {
   const [tags, setTags] = useState<TagType[]>([]);
+  const [direction, setDirection] = useState<"asc" | "desc">("desc");
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const searchParams = useSearchParams();
   const { t } = useStableTranslation();
@@ -45,9 +58,9 @@ export default function ReleaseTimeline() {
   const categories = useMemo(() => (categoryParam ? [categoryParam] : []), [categoryParam]);
 
   const releasesQuery = useInfiniteQuery({
-    queryKey: ["releases", tags, categories, keywordParam],
+    queryKey: ["releases", tags, categories, keywordParam, direction],
     queryFn: ({ pageParam = 0 }) =>
-      fetchReleases({ page: pageParam, size: 20, tags, categories, keyword: keywordParam || undefined }),
+      fetchReleases({ page: pageParam, size: 20, tags, categories, keyword: keywordParam || undefined, direction }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.number + 1;
@@ -84,6 +97,15 @@ export default function ReleaseTimeline() {
         <CategoryFilter value={categories} onChange={() => {}} />
         <TagFilter value={tags} onChange={setTags} />
       </Controls>
+
+      <SortSelect
+        value={direction}
+        onChange={(e) => setDirection(e.target.value as "asc" | "desc")}
+        aria-label={t("releaseTimeline.sortLabel")}
+      >
+        <option value="desc">{t("releaseTimeline.sortNewest")}</option>
+        <option value="asc">{t("releaseTimeline.sortOldest")}</option>
+      </SortSelect>
 
       {isLoading &&
         Array.from({ length: 4 }).map((_, index) => (
