@@ -8,33 +8,53 @@ import { useStableTranslation } from "@/lib/hooks/useStableTranslation";
 import { fetchTechStackIssues } from "@/lib/api/relboard";
 import type { IssueTagType } from "@/lib/api/types";
 import { getReadableLabelStyle } from "@/lib/utils/labelColor";
+import SearchBar from "@/features/releases/components/SearchBar";
 
 const Wrap = styled.section`
   display: grid;
   gap: 14px;
 `;
 
-const FilterRow = styled.div`
+const SearchRow = styled.div`
+  max-width: 400px;
+`;
+
+const FilterControlRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const TagFilterWrap = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 `;
 
-const FilterButton = styled.button<{ $active?: boolean }>`
-  border: 1px solid ${({ theme, $active }) =>
-    $active ? theme.colors.accentStrong : theme.colors.border};
-  background: ${({ theme, $active }) =>
-    $active ? theme.colors.surfaceRaised : theme.colors.surface};
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.text : theme.colors.muted};
-  padding: 6px 12px;
+const FilterButton = styled.button<{
+  $active: boolean;
+  $color: string;
+  $bg: string;
+}>`
+  border: 1px solid transparent;
+  background: ${({ $bg }) => $bg};
+  color: ${({ $color }) => $color};
+  padding: 4px 10px;
   border-radius: ${({ theme }) => theme.radii.pill};
   font-size: ${({ theme }) => theme.fontSizes.xs};
   font-weight: 600;
   cursor: pointer;
+  transition: all 160ms ease;
+  opacity: ${({ $active }) => ($active ? 1 : 0.5)};
+
+  &:hover {
+    opacity: 1;
+  }
 `;
 
-const ToggleButton = styled.button`
+const SortSelect = styled.select`
   border: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.text};
@@ -42,21 +62,8 @@ const ToggleButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.xs};
   padding: 6px 10px;
   cursor: pointer;
-`;
-
-const SearchInput = styled.input`
-  min-width: 220px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surface};
-  color: ${({ theme }) => theme.colors.text};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  padding: 6px 10px;
-  outline: none;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.accentStrong};
-  }
+  width: fit-content;
+  flex-shrink: 0;
 `;
 
 const StateMessage = styled.div`
@@ -69,55 +76,59 @@ const StateMessage = styled.div`
 
 const List = styled.div`
   display: grid;
-  gap: 12px;
+  gap: 16px;
 `;
 
 const Card = styled(Link)`
-  border-radius: ${({ theme }) => theme.radii.lg};
+  border-radius: 14px;
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: 14px 16px;
+  padding: 18px;
   display: grid;
   gap: 10px;
   text-decoration: none;
-  min-width: 0;
-  transition: border-color 140ms ease, transform 140ms ease;
+  box-shadow: ${({ theme }) => theme.shadows.soft};
+  transition: all 150ms ease;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.borderHover};
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
   }
 `;
 
-const Row = styled.div`
+const TitleRow = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 8px;
 `;
 
-const Meta = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: ${({ theme }) => theme.colors.muted};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
+const Title = styled.h3`
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 `;
 
 const BadgeRow = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 `;
 
 const Badge = styled.span<{ $state?: string }>`
   display: inline-flex;
   align-items: center;
   border-radius: ${({ theme }) => theme.radii.pill};
-  padding: 4px 9px;
+  padding: 2px 8px;
   font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: 700;
+  font-weight: 600;
   color: ${({ $state }) => ($state === "closed" ? "#f87171" : "#10b981")};
   background: ${({ $state }) =>
     $state === "closed" ? "rgba(248, 113, 113, 0.12)" : "rgba(16, 185, 129, 0.12)"};
@@ -125,24 +136,22 @@ const Badge = styled.span<{ $state?: string }>`
     ${({ $state }) => ($state === "closed" ? "rgba(248, 113, 113, 0.35)" : "rgba(16, 185, 129, 0.35)")};
 `;
 
-const AiBadge = styled(Badge)`
+const AiBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  padding: 2px 8px;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.accentStrong};
-  background: rgba(47, 107, 255, 0.14);
-  border: 1px solid rgba(47, 107, 255, 0.3);
-`;
-
-const Title = styled.h3`
-  margin: 0;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  background: rgba(47, 107, 255, 0.10);
+  border: 1px solid rgba(47, 107, 255, 0.25);
 `;
 
 const LabelRow = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const Label = styled.span<{ $bg?: string; $fg?: string; $border?: string }>`
@@ -155,6 +164,20 @@ const Label = styled.span<{ $bg?: string; $fg?: string; $border?: string }>`
   color: ${({ $fg }) => $fg ?? "#ffffff"};
   background: ${({ $bg }) => $bg ?? "#4b5563"};
   border: 1px solid ${({ $border }) => $border ?? "rgba(255,255,255,0.22)"};
+`;
+
+const Meta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.muted};
+`;
+
+const ExternalLink = styled.a`
+  color: ${({ theme }) => theme.colors.muted};
+  font-weight: 600;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
 `;
 
 const Sentinel = styled.div`
@@ -174,27 +197,20 @@ function formatDate(value: string, locale: string) {
 export default function TechStackIssuesList({ techStackName }: { techStackName: string }) {
   const { t, language } = useStableTranslation();
   const [selectedTag, setSelectedTag] = useState<IssueTagType | null>(null);
-  const [showKorean, setShowKorean] = useState(true);
-  const [searchInput, setSearchInput] = useState("");
+  const [sort, setSort] = useState<"latest" | "oldest">("latest");
   const [searchKeyword, setSearchKeyword] = useState("");
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const tags = useMemo(() => (selectedTag ? [selectedTag] : undefined), [selectedTag]);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setSearchKeyword(searchInput.trim());
-    }, 300);
-    return () => window.clearTimeout(timer);
-  }, [searchInput]);
-
   const issuesQuery = useInfiniteQuery({
-    queryKey: ["tech-stack-issues", techStackName, selectedTag, searchKeyword],
+    queryKey: ["tech-stack-issues", techStackName, selectedTag, searchKeyword, sort],
     queryFn: ({ pageParam = 0 }) =>
       fetchTechStackIssues(techStackName, {
         page: pageParam,
         size: 20,
         tags,
         q: searchKeyword || undefined,
+        sort,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
@@ -225,37 +241,50 @@ export default function TechStackIssuesList({ techStackName }: { techStackName: 
 
   return (
     <Wrap>
-      <FilterRow>
-        <FilterButton
-          type="button"
-          $active={!selectedTag}
-          onClick={() => setSelectedTag(null)}
+      <SearchRow>
+        <SearchBar keyword={searchKeyword} onChange={setSearchKeyword} />
+      </SearchRow>
+
+      <FilterControlRow>
+        <TagFilterWrap>
+          <FilterButton
+            type="button"
+            $active={!selectedTag}
+            $color="#94a3b8"
+            $bg="rgba(148, 163, 184, 0.14)"
+            onClick={() => setSelectedTag(null)}
+          >
+            {t("issues.filterAll")}
+          </FilterButton>
+          <FilterButton
+            type="button"
+            $active={selectedTag === "BEGINNER_FRIENDLY"}
+            $color="#10b981"
+            $bg="rgba(16, 185, 129, 0.14)"
+            onClick={() => setSelectedTag("BEGINNER_FRIENDLY")}
+          >
+            {t("issues.filterBeginner")}
+          </FilterButton>
+          <FilterButton
+            type="button"
+            $active={selectedTag === "HELP_WANTED"}
+            $color="#a78bfa"
+            $bg="rgba(167, 139, 250, 0.14)"
+            onClick={() => setSelectedTag("HELP_WANTED")}
+          >
+            {t("issues.filterHelpWanted")}
+          </FilterButton>
+        </TagFilterWrap>
+
+        <SortSelect
+          value={sort}
+          onChange={(e) => setSort(e.target.value as "latest" | "oldest")}
+          aria-label={t("issues.sortLabel")}
         >
-          {t("issues.filterAll")}
-        </FilterButton>
-        <FilterButton
-          type="button"
-          $active={selectedTag === "BEGINNER_FRIENDLY"}
-          onClick={() => setSelectedTag("BEGINNER_FRIENDLY")}
-        >
-          {t("issues.filterBeginner")}
-        </FilterButton>
-        <FilterButton
-          type="button"
-          $active={selectedTag === "HELP_WANTED"}
-          onClick={() => setSelectedTag("HELP_WANTED")}
-        >
-          {t("issues.filterHelpWanted")}
-        </FilterButton>
-        <SearchInput
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder={language === "ko" ? "이슈 검색" : "Search issues"}
-        />
-        <ToggleButton type="button" onClick={() => setShowKorean((prev) => !prev)}>
-          {showKorean ? t("issues.showOriginal") : t("issues.showKorean")}
-        </ToggleButton>
-      </FilterRow>
+          <option value="latest">{t("issues.sortLatest")}</option>
+          <option value="oldest">{t("issues.sortOldest")}</option>
+        </SortSelect>
+      </FilterControlRow>
 
       {isLoading && <StateMessage>{t("issues.loading")}</StateMessage>}
       {isError && <StateMessage>{t("issues.error")}</StateMessage>}
@@ -265,47 +294,59 @@ export default function TechStackIssuesList({ techStackName }: { techStackName: 
 
       {!isLoading && !isError && issues.length > 0 && (
         <List>
-          {issues.map((issue) => (
+          {issues.map((issue) => {
+            const hasTranslation = Boolean(
+              issue.translation?.titleKoReady ||
+              issue.translation?.summaryKoReady ||
+              issue.titleKo ||
+              issue.bodySummaryKo
+            );
+            return (
             <Card key={issue.id} href={`/issues/${issue.id}`}>
-              <Row>
-                <Meta>
-                  <span>#{issue.issueNumber}</span>
-                  <span>{formatDate(issue.githubCreatedAt, language)}</span>
-                  <span>{t("issues.comments", { count: issue.commentCount })}</span>
-                </Meta>
-              </Row>
+              <TitleRow>
+                <Title>{issue.titleKo ?? issue.title}</Title>
+                <BadgeRow>
+                  <Badge $state={issue.state?.toLowerCase()}>
+                    {(issue.state ?? "").toUpperCase() || t("issues.stateOpen")}
+                  </Badge>
+                  {hasTranslation && <AiBadge>{t("issues.aiTranslated")}</AiBadge>}
+                </BadgeRow>
+              </TitleRow>
 
-              <BadgeRow>
-                <Badge $state={issue.state?.toLowerCase()}>
-                  {(issue.state ?? "").toUpperCase() || t("issues.stateOpen")}
-                </Badge>
-                {(issue.translation?.titleKoReady ||
-                  issue.translation?.summaryKoReady ||
-                  issue.titleKo ||
-                  issue.bodySummaryKo) && (
-                  <AiBadge>{t("issues.aiTranslated")}</AiBadge>
-                )}
-              </BadgeRow>
+              {issue.labels.length > 0 && (
+                <LabelRow>
+                  {issue.labels.map((label) => {
+                    const style = getReadableLabelStyle(label.color);
+                    return (
+                      <Label
+                        key={`${issue.id}-${label.name}`}
+                        $bg={style.bg}
+                        $fg={style.fg}
+                        $border={style.border}
+                      >
+                        {label.name}
+                      </Label>
+                    );
+                  })}
+                </LabelRow>
+              )}
 
-              <Title>{showKorean ? issue.titleKo ?? issue.title : issue.title}</Title>
-
-              <LabelRow>
-                {issue.labels.map((label) => {
-                  const style = getReadableLabelStyle(label.color);
-                  return (
-                    <Label
-                      key={`${issue.id}-${label.name}`}
-                      $bg={style.bg}
-                      $fg={style.fg}
-                      $border={style.border}
-                    >
-                      {label.name}
-                    </Label>
-                  );
-                })}
-              </LabelRow>
+              <Meta>
+                <span>#{issue.issueNumber}</span>
+                <span>{formatDate(issue.githubCreatedAt, language)}</span>
+                <span>{t("issues.comments", { count: issue.commentCount })}</span>
+                <ExternalLink
+                  href={issue.htmlUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {t("issues.openGithub")}
+                </ExternalLink>
+              </Meta>
             </Card>
-          ))}
+            );
+          })}
           {isFetchingNextPage && <StateMessage>{t("issues.loading")}</StateMessage>}
           <Sentinel ref={sentinelRef} />
         </List>
