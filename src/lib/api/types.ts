@@ -39,6 +39,7 @@ export type Category = string;
 
 export type ReleaseResponse = {
   id: number;
+  bookmarkedAt?: string | null;
   techStack: TechStackResponse;
   version: string;
   title: string;
@@ -160,6 +161,7 @@ export type IssueLabel = {
 
 export type IssueResponse = {
   id: string;
+  bookmarkedAt?: string | null;
   techStackId: string;
   sourceId: string;
   githubIssueId: string;

@@ -23,11 +23,14 @@ export type ReleaseListParams = {
   tags?: TagType[];
   categories?: string[];
   keyword?: string;
+  direction?: "asc" | "desc";
+  techStackId?: string;
 };
 
 export type BookmarkListParams = {
   page?: number;
   size?: number;
+  direction?: "asc" | "desc";
 };
 
 export type IssueListParams = {
@@ -36,10 +39,13 @@ export type IssueListParams = {
   techStackId?: number;
   categories?: string[];
   q?: string;
-  sort?: "latest" | "trending" | "impact";
-  direction?: "asc" | "desc";
+  sort?: "latest" | "oldest";
   tags?: IssueTagType[];
   labels?: string[];
+};
+
+export type TechStackListParams = {
+  sort?: "name" | "latest";
 };
 
 function normalizeIssuePage(page: Page<IssueResponse> & { page?: number; hasNext?: boolean }) {
@@ -122,9 +128,12 @@ export async function fetchTechStackReleases(
   return response.data;
 }
 
-export async function fetchTechStacks() {
+export async function fetchTechStacks(params?: TechStackListParams) {
+  const query = params
+    ? buildQuery(params as unknown as Record<string, string | number | undefined | Array<string>>)
+    : "";
   const response = await fetchJson<CommonApiResponse<TechStackResponse[]>>(
-    "/api/v1/tech-stacks"
+    `/api/v1/tech-stacks${query}`
   );
 
   if (!response.success) {
@@ -250,12 +259,14 @@ export async function fetchMyBookmarksPage(params: BookmarkListParams) {
   );
 
   if (Array.isArray(data)) {
+    const page = params.page ?? 0;
+    const size = params.size ?? data.length;
     return {
       content: data,
       totalElements: data.length,
       totalPages: 1,
-      number: 0,
-      size: data.length,
+      number: page,
+      size,
     };
   }
 
@@ -277,12 +288,14 @@ export async function fetchMyIssueBookmarksPage(params: BookmarkListParams) {
   );
 
   if (Array.isArray(data)) {
+    const page = params.page ?? 0;
+    const size = params.size ?? data.length;
     return {
       content: data,
       totalElements: data.length,
       totalPages: 1,
-      number: 0,
-      size: data.length,
+      number: page,
+      size,
     };
   }
 
