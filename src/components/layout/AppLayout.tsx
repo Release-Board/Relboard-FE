@@ -8,6 +8,7 @@ import Header from "./Header";
 import { useAuthStore } from "@/lib/store/authStore";
 import ToastHost from "@/components/common/ToastHost";
 import ContactModal from "@/components/support/ContactModal";
+import SpringAnnouncementModal from "@/components/announcement/SpringAnnouncementModal";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { useContactStore } from "@/lib/store/contactStore";
 import { usePathname, useRouter } from "next/navigation";
@@ -262,6 +263,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </CenteredContainer>
       <ToastHost />
       <ContactModal />
+      <SpringAnnouncementModal />
       <FloatingSupportButton type="button" onClick={openContact}>
         <MessageCircle size={16} />
         {t("support.contactButton")}

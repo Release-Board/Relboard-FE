@@ -145,6 +145,22 @@ const resources = {
         success: "문의가 접수되었어요.",
         error: "문의 접수에 실패했어요.",
       },
+      announcement: {
+        springAllProjects: {
+          badge: "GOOD NEWS",
+          modalTitle: "Spring 프로젝트 업데이트 안내",
+          modalSubtitle: "Relboard 기술 스택에 Spring 생태계 프로젝트가 대거 추가되었습니다.",
+          cardTitle: "Spring 기반 프로젝트가 기술 스택에 반영되었습니다",
+          cardBody:
+            "Spring Framework, Spring Boot, Spring Security 등 주요 프로젝트를 이제 Relboard에서 함께 추적할 수 있어요.",
+          point1: "Spring 관련 릴리즈를 한곳에서 빠르게 확인할 수 있어요.",
+          point2: "관심 스택을 구독하고 중요한 변경만 받아볼 수 있어요.",
+          point3: "트렌딩/북마크와 함께 실무 중심으로 추적할 수 있어요.",
+          dontShowAgain: "다시 보지 않기",
+          close: "닫기",
+          viewSpring: "Spring 스택 보러가기",
+        },
+      },
       auth: {
         loggingIn: "로그인 중입니다...",
         loginRequired: "로그인이 필요해요.",
@@ -437,6 +453,23 @@ const resources = {
         submitting: "Sending...",
         success: "Thanks! We received your message.",
         error: "Failed to send your message.",
+      },
+      announcement: {
+        springAllProjects: {
+          badge: "GOOD NEWS",
+          modalTitle: "Spring Projects Update",
+          modalSubtitle:
+            "Spring ecosystem projects have been added to Relboard tech stacks.",
+          cardTitle: "Spring-based projects are now available",
+          cardBody:
+            "You can now track major projects including Spring Framework, Spring Boot, and Spring Security in Relboard.",
+          point1: "Browse Spring-related releases in one timeline.",
+          point2: "Follow only the stacks you care about and get key updates.",
+          point3: "Use trending and bookmarks for practical day-to-day tracking.",
+          dontShowAgain: "Don't show again",
+          close: "Close",
+          viewSpring: "View Spring Stacks",
+        },
       },
       auth: {
         loggingIn: "Logging in...",
